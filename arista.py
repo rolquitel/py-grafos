@@ -60,6 +60,7 @@ class Arista:
             'estilo.grosor' : 1,
             'estilo.discontinuo?': False,
             'estilo.tamaño': 10,
+            'estilo.mostrarId?' : True,
         }
 
     def __str__(self):
@@ -95,3 +96,11 @@ class Arista:
             #      g.escala * (self.n0.atributos['pos']) + g.origen,
             #      g.escala * (self.n1.atributos['pos']) + g.origen
             #      )
+
+        pos = (g.escala * ((self.n0.atributos['pos'] + self.n1.atributos['pos']) / 2) + g.origen)
+        lon = len(str(self.id)) * g.tam_fuente / 4
+        try:
+            g.fuente.render_to(g.screen, (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id),
+                               self.atributos['estilo.color'])
+        except:
+            print('Except: g.fuente.render_to()')

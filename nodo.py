@@ -107,4 +107,7 @@ class Nodo:
 
         if self.atributos['estilo.mostrarId?']:
             lon = len(str(self.id)) * g.tam_fuente / 4
-            g.fuente.render_to(g.screen, (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id), self.atributos['estilo.color_borde'])
+            try:
+                g.fuente.render_to(g.screen, (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id), self.atributos['estilo.color_borde'])
+            except:
+                print('Except: g.fuente.render_to()')
