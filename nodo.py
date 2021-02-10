@@ -37,13 +37,13 @@ class Nodo:
             retVal += str(a) + ','
         return retVal
 
-    def draw(self, g):
+    def dibujar(self, g):
         """
         Dibuja el nodo en la pantalla de acuerdo a los parámetros y a sus propios atributos
         :param g:
         :return:
         """
-        pos = g.escala * self.atributos['pos'] + g.origen
+        pos = g.transformar(self.atributos['pos'])
         if self.atributos['estilo.escalar?']:
             tam2 = self.atributos['estilo.tamaño'] * g.escala
         else:

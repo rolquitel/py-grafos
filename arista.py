@@ -2,44 +2,9 @@ import math
 import pygame
 import numpy
 
-def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
-    origin = numpy.array(start_pos)
-    target = numpy.array(end_pos)
-    displacement = target - origin
-    length = numpy.linalg.norm(displacement)
-    slope = displacement / length
-
-    for index in range(0, int(length/dash_length), 2):
-        start = origin + (slope *    index    * dash_length)
-        end   = origin + (slope * (index + 1) * dash_length)
-        pygame.draw.aaline(surf, color, start, end, width)
+from util import dibujar_linea_punteada
 
 
-def arco(surf, color, a, b):
-    try:
-        alpha = math.pi / 3
-        a = numpy.array(a)
-        b = numpy.array(b)
-        r = numpy.linalg.norm(a - b)
-        p = (a + b) / 2
-        m = -(a[0] - b[0]) / (a[1] - b[1])
-        theta = math.atan(m)
-        rho = r * math.sin((math.pi - alpha) / 2)
-        c = numpy.array([p[0] + rho * math.cos(theta), p[1] + rho * math.sin(theta)])
-        ma = (c[1] - a[1]) / (c[0] - a[0])
-        mb = (c[1] - b[1]) / (c[0] - b[0])
-        i = numpy.array([ c[0] - r, c[1] - r])
-
-        # pygame.draw.circle(surf, color, a, 5)
-        # pygame.draw.circle(surf, color, b, 5)
-        # pygame.draw.circle(surf, (200, 0, 0), c, 5, 1)
-        # pygame.draw.circle(surf, (200, 0, 0), c, r, 1)
-        pygame.draw.arc(surf, color, (i, (2*r, 2*r)), math.atan(-ma) + math.pi, math.atan(-mb) + math.pi)
-    except ZeroDivisionError:
-        pygame.draw.line(surf, color, a, b)
-
-
-#################################################
 class Arista:
     """
     Clase arista
@@ -60,7 +25,7 @@ class Arista:
             'estilo.grosor' : 1,
             'estilo.discontinuo?': False,
             'estilo.tamaño': 10,
-            'estilo.mostrarId?' : True,
+            'estilo.mostrarId?' : False,
         }
 
     def __str__(self):
@@ -70,10 +35,10 @@ class Arista:
         """
         return self.id
 
-    def getID(self):
+    def obtID(self):
         return self.id
 
-    def draw(self, g):
+    def dibujar(self, g):
         """
         Dibuja la arista en la pantalla de acuerdo a los parámetros y a sus propios atributos
         :param scr: handle de la pantalla
@@ -81,16 +46,18 @@ class Arista:
         :param origin: valor del origen
         :return:
         """
+        n0 = g.transformar(self.n0.atributos['pos'])
+        n1 = g.transformar(self.n1.atributos['pos'])
         if self.atributos['estilo.discontinuo?']:
-            draw_dashed_line(g.screen, self.atributos['estilo.color'],
-                             g.escala * (self.n0.atributos['pos']) + g.origen,
-                             g.escala * (self.n1.atributos['pos']) + g.origen,
-                             self.atributos['estilo.grosor'],
-                             self.atributos['estilo.tamaño'])
+            dibujar_linea_punteada(g.screen, self.atributos['estilo.color'],
+                                   g.escala * (self.n0.atributos['pos']) + g.origen,
+                                   g.escala * (self.n1.atributos['pos']) + g.origen,
+                                   self.atributos['estilo.grosor'],
+                                   self.atributos['estilo.tamaño'])
         else:
             pygame.draw.aaline(g.screen, self.atributos['estilo.color'],
-                               g.escala * (self.n0.atributos['pos']) + g.origen,
-                               g.escala * (self.n1.atributos['pos']) + g.origen,
+                               n0,
+                               n1,
                                self.atributos['estilo.grosor'])
             # arco(g.screen, self.atributos['estilo.color'],
             #      g.escala * (self.n0.atributos['pos']) + g.origen,
@@ -100,7 +67,7 @@ class Arista:
         pos = (g.escala * ((self.n0.atributos['pos'] + self.n1.atributos['pos']) / 2) + g.origen)
         lon = len(str(self.id)) * g.tam_fuente / 4
         try:
-            g.fuente.render_to(g.screen, (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id),
-                               self.atributos['estilo.color'])
+            if self.atributos['estilo.mostrarId?']:
+                g.fuente.render_to(g.screen, (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id), self.atributos['estilo.color'])
         except:
             print('Except: g.fuente.render_to()')
