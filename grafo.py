@@ -1,4 +1,3 @@
-
 import math
 import random
 import threading
@@ -7,10 +6,11 @@ import numpy
 import pygame
 import pygame.freetype
 
-import disposicion
+import layout
 from arista import Arista
 from nodo import Nodo
-from util import dibujar_rect_punteado
+from quadtree import QuadTree, Rectangulo, Punto, Circulo
+from util import dibujar_rect_punteado, Transformacion
 
 NODE_NAME_PREFIX = 'nodo_'
 X_ATTR = '__x__'
@@ -31,8 +31,9 @@ class Grafo:
         self.aristas = {}
         self.atributos = {
             'estilo.fondo': (20, 20, 20),
-            'estilo.mostrarExtension?': True,
+            'estilo.mostrarExtension?': False,
         }
+        self.threading = False
 
     def obtNodos(self):
         return self.nodos
@@ -125,8 +126,19 @@ class Grafo:
 
         return retVal
 
-    def transformar(self, punto):
-        return self.escala * (punto - self.I) + self.offset
+    def calcular_limites(self):
+        I = numpy.array([math.inf, math.inf])
+        F = numpy.array([-math.inf, -math.inf])
+        for v in self.nodos.values():
+            I[0] = min(I[0], v.atributos['pos'][0])
+            I[1] = min(I[1], v.atributos['pos'][1])
+            F[0] = max(F[0], v.atributos['pos'][0])
+            F[1] = max(F[1], v.atributos['pos'][1])
+
+        self.I = I
+        self.F = F
+
+        self.transformacion = Transformacion(self.I, self.F, [0, 0], self.res, 0.9)
 
     def dibujar(self):
         """
@@ -134,33 +146,10 @@ class Grafo:
         :param screen: handle del área de dibujo
         :return:
         """
-        contenido = 0.9
-        marco = (1 - contenido) / 2
-        I = numpy.array([100000, 10000])
-        F = numpy.array([-100000, -10000])
-        for v in self.nodos.values():
-            I[0] = min(I[0], v.atributos['pos'][0])
-            I[1] = min(I[1], v.atributos['pos'][1])
-            F[0] = max(F[0], v.atributos['pos'][0])
-            F[1] = max(F[1], v.atributos['pos'][1])
-
-        Sx = self.res[0] / (F[0] - I[0])
-        Sy = self.res[1] / (F[1] - I[1])
-
-        self.I = I
-
-        if Sx > Sy:
-            self.escala = Sy * contenido
-            desp = (Sx - Sy) / (2 * Sx) + marco
-            self.offset = numpy.array([self.res[0] * desp, self.res[1] * marco])
-        else:
-            self.escala = Sx * contenido
-            desp = (Sy - Sx) / (2 * Sy) + marco
-            self.offset = numpy.array([self.res[0] * marco, self.res[1] * desp])
 
         if self.atributos['estilo.mostrarExtension?']:
-            I = self.transformar(I)
-            F = self.transformar(F)
+            I = self.transformacion.transformar(self.I)
+            F = self.transformacion.transformar(self.F)
             dibujar_rect_punteado(self.screen, (128, 128, 128), I, F)
 
         for a in self.aristas.values():
@@ -169,11 +158,36 @@ class Grafo:
         for v in self.nodos.values():
             v.dibujar(self)
 
-    def mostrar(self, res, disp = None):
+
+    def posicionar_nodos_al_azar(self):
+        origen = self.res / 2
+        for v in self.nodos.values():
+            v.atributos['pos'] = numpy.array(
+                [random.randint(-origen[0], origen[0]), random.randint(-origen[1], origen[1])])
+
+    def posicionar_nodos_malla(self):
+        lado = int(math.ceil(math.sqrt(len(self.nodos))))
+        tam = self.res / (lado + 2)
+        origen = self.res / 2
+
+        n = 0
+        for v in self.nodos.values():
+            x = tam[0] * ((n % lado) + 1) - origen[0]
+            y = tam[1] * ((n / lado) + 1) - origen[1]
+            v.atributos['pos'] = numpy.array([x, y])
+            n = n + 1
+
+    def posicionar_nodos(self):
+        # self.posicionar_nodos_al_azar()
+        self.posicionar_nodos_malla()
+
+        self.calcular_limites()
+
+    def mostrar(self, res, lyout=None):
         pause = False
         running = True
-        timeout = 0.1
         acomodando = True
+        CPS = 30
 
         pygame.init()
         self.screen = pygame.display.set_mode(res)
@@ -182,13 +196,20 @@ class Grafo:
         self.escala = 1
         self.tam_fuente = 10
         self.fuente = pygame.freetype.Font('fonts/courier_b.ttf', self.tam_fuente)
+        self.layout = lyout
 
-        if disp == None:
-            disp = disposicion.FruchtermanReingold(self, res)
+        self.posicionar_nodos()
+
+        if lyout == None:
+            self.layout = layout.BarnesHut(self, res)
+
+        if self.threading:
+            t = threading.Thread(target=lyout.ejecutar)
+            t.start()
+
+        fpsClock = pygame.time.Clock()
 
         while running:
-            self.screen.fill(self.atributos['estilo.fondo'])
-
             ev = pygame.event.get()
             for event in ev:
                 if event.type == pygame.KEYDOWN:
@@ -197,6 +218,7 @@ class Grafo:
                         pause = not pause
 
                 if event.type == pygame.QUIT:
+                    layout.parar_layout = True
                     running = False
 
                 # mouseClick = pygame.mouse.get_pressed()
@@ -205,15 +227,22 @@ class Grafo:
                 #     celX, celY = int(np.floor(posX / dim)), int(np.floor(posY / dim) )
                 #     newGameState[celX, celY] = 1
 
-            if acomodando:
-                acomodando = not disp.paso()
+            if pause:
+                continue
 
+            self.screen.fill(self.atributos['estilo.fondo'])
+
+            if acomodando and not self.threading:
+                acomodando = not self.layout.paso()
+
+            # self.layout.qtree.dibujar(self.screen, 'blue', self.transformacion)
             self.dibujar()
 
             cad = str(len(self.nodos.values())) + ' nodos y ' + str(len(self.aristas.values())) + ' aristas'
             self.fuente.render_to(self.screen, (10, 10), cad, (128, 128, 128))
+            cad = str(math.ceil(1000 / fpsClock.tick(CPS))) + ' cps'
+            self.fuente.render_to(self.screen, (res[0] - 50, res[1] - 15), cad, (128, 128, 128))
 
-            time.sleep(timeout / len(self.nodos))
             pygame.display.flip()
 
     def display_thread(self, res):

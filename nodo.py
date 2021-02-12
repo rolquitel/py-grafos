@@ -43,7 +43,7 @@ class Nodo:
         :param g:
         :return:
         """
-        pos = g.transformar(self.atributos['pos'])
+        pos = g.transformacion.transformar(self.atributos['pos'])
         if self.atributos['estilo.escalar?']:
             tam2 = self.atributos['estilo.tamaño'] * g.escala
         else:

@@ -46,8 +46,8 @@ class Arista:
         :param origin: valor del origen
         :return:
         """
-        n0 = g.transformar(self.n0.atributos['pos'])
-        n1 = g.transformar(self.n1.atributos['pos'])
+        n0 = g.transformacion.transformar(self.n0.atributos['pos'])
+        n1 = g.transformacion.transformar(self.n1.atributos['pos'])
         if self.atributos['estilo.discontinuo?']:
             dibujar_linea_punteada(g.screen, self.atributos['estilo.color'],
                                    g.escala * (self.n0.atributos['pos']) + g.origen,
