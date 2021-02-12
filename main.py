@@ -10,13 +10,13 @@ from nodo import Nodo
 
 if __name__ == '__main__':
     random.seed(time.clock())
+    g = Grafo()
 
-    #g = algoritmos.randomBarabasi(300, 6)
-    g = algoritmos.randomGeo(200, 0.15)
-    # gv = g.toGraphviz()
-    # f = open('graph.gv', 'w+')
-    # f.write(gv)
-    # print('Ok')
+    # g = algoritmos.randomBarabasi(50, 6)
+    # g = algoritmos.randomGeo(100, 0.25)
+    # g.guardar('grafos/geo.100.25.gv')
+    #g.abrir('grafos/geo.100.25.gv')
+    g.abrir('grafos/barabasi.50.6.gv')
 
     g.atributos['estilo.fondo'] = (250, 250, 250)
     for a in g.aristas.values():

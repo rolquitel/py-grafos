@@ -120,8 +120,10 @@ class Grafo:
         :return: representación en GV del grafo
         """
         retVal = 'digraph X {\n'
-        for e in self.aristas:
-            retVal += str(e) + ';\n'
+        for e in self.aristas.values():
+            n0 = e.n0.id
+            n1 = e.n1.id
+            retVal += n0 + ' -> ' + n1 + ';\n'
         retVal += '}\n'
 
         return retVal
@@ -158,7 +160,6 @@ class Grafo:
         for v in self.nodos.values():
             v.dibujar(self)
 
-
     def posicionar_nodos_al_azar(self):
         origen = self.res / 2
         for v in self.nodos.values():
@@ -178,8 +179,8 @@ class Grafo:
             n = n + 1
 
     def posicionar_nodos(self):
-        # self.posicionar_nodos_al_azar()
-        self.posicionar_nodos_malla()
+        self.posicionar_nodos_al_azar()
+        # self.posicionar_nodos_malla()
 
         self.calcular_limites()
 
@@ -248,3 +249,23 @@ class Grafo:
     def display_thread(self, res):
         t = threading.Thread(target=self.mostrar, args=(res,))
         t.start()
+
+    def guardar(self, archivo):
+        print('Guardando', archivo, ' ...', end='')
+        gv = self.aGraphviz()
+        f = open(archivo, 'w+')
+        f.write(gv)
+        print('Ok.', len(self.nodos), 'nodos,', len(self.aristas), 'aristas')
+
+    def abrir(self, archivo):
+        print('Leyendo', archivo, ' ...', end='')
+        f = open(archivo, 'r')
+        lines = f.readlines()
+        for i in range(1, len(lines)):
+            tokens = lines[i].split(' ')
+            if len(tokens) < 3:
+                continue
+            tokens[2] = tokens[2].rstrip(';\n')
+            self.agregarArista(tokens[0]+tokens[1]+tokens[2], tokens[0], tokens[2])
+
+        print('Ok.', len(self.nodos), 'nodos,', len(self.aristas), 'aristas')
