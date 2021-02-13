@@ -179,8 +179,8 @@ class Grafo:
             n = n + 1
 
     def posicionar_nodos(self):
-        self.posicionar_nodos_al_azar()
-        # self.posicionar_nodos_malla()
+        # self.posicionar_nodos_al_azar()
+        self.posicionar_nodos_malla()
 
         self.calcular_limites()
 
@@ -198,6 +198,7 @@ class Grafo:
         self.tam_fuente = 10
         self.fuente = pygame.freetype.Font('fonts/courier_b.ttf', self.tam_fuente)
         self.layout = lyout
+        self.antialias = False
 
         self.posicionar_nodos()
 
@@ -233,10 +234,14 @@ class Grafo:
 
             self.screen.fill(self.atributos['estilo.fondo'])
 
-            if acomodando and not self.threading:
-                acomodando = not self.layout.paso()
+            if not self.threading:
+                self.layout.paso()
 
-            # self.layout.qtree.dibujar(self.screen, 'blue', self.transformacion)
+            if self.layout.convergio and not self.antialias:
+                self.antialias = True
+                for a in self.aristas.values():
+                    a.atributos['estilo.antialias?'] = True
+
             self.dibujar()
 
             cad = str(len(self.nodos.values())) + ' nodos y ' + str(len(self.aristas.values())) + ' aristas'

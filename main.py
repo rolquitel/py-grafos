@@ -9,14 +9,14 @@ from grafo import Grafo
 from nodo import Nodo
 
 if __name__ == '__main__':
-    random.seed(time.clock())
+    # random.seed(time.clock())
     g = Grafo()
 
+    # g = algoritmos.randomErdos(300, 5000)
     # g = algoritmos.randomBarabasi(50, 6)
     # g = algoritmos.randomGeo(100, 0.25)
-    # g.guardar('grafos/geo.100.25.gv')
-    #g.abrir('grafos/geo.100.25.gv')
-    g.abrir('grafos/barabasi.50.6.gv')
+    # g.guardar('grafos/erdos.300.5k.gv')
+    g.abrir('grafos/barabasi.500.6.gv')
 
     g.atributos['estilo.fondo'] = (250, 250, 250)
     for a in g.aristas.values():

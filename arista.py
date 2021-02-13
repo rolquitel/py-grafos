@@ -26,6 +26,7 @@ class Arista:
             'estilo.discontinuo?': False,
             'estilo.tamaño': 10,
             'estilo.mostrarId?' : False,
+            'estilo.antialias?': False,
         }
 
     def __str__(self):
@@ -50,12 +51,17 @@ class Arista:
         n1 = g.transformacion.transformar(self.n1.atributos['pos'])
         if self.atributos['estilo.discontinuo?']:
             dibujar_linea_punteada(g.screen, self.atributos['estilo.color'],
-                                   g.escala * (self.n0.atributos['pos']) + g.origen,
-                                   g.escala * (self.n1.atributos['pos']) + g.origen,
+                                   n0,
+                                   n1,
                                    self.atributos['estilo.grosor'],
                                    self.atributos['estilo.tamaño'])
-        else:
+        elif self.atributos['estilo.antialias?']:
             pygame.draw.aaline(g.screen, self.atributos['estilo.color'],
+                               n0,
+                               n1,
+                               self.atributos['estilo.grosor'])
+        else:
+            pygame.draw.line(g.screen, self.atributos['estilo.color'],
                                n0,
                                n1,
                                self.atributos['estilo.grosor'])
@@ -64,10 +70,11 @@ class Arista:
             #      g.escala * (self.n1.atributos['pos']) + g.origen
             #      )
 
-        pos = (g.escala * ((self.n0.atributos['pos'] + self.n1.atributos['pos']) / 2) + g.origen)
-        lon = len(str(self.id)) * g.tam_fuente / 4
+
         try:
             if self.atributos['estilo.mostrarId?']:
+                pos = (g.escala * ((self.n0.atributos['pos'] + self.n1.atributos['pos']) / 2) + g.origen)
+                lon = len(str(self.id)) * g.tam_fuente / 4
                 g.fuente.render_to(g.screen, (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id), self.atributos['estilo.color'])
         except:
             print('Except: g.fuente.render_to()')
