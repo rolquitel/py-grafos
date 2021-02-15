@@ -48,6 +48,7 @@ def fa(k, x):
     :param x:
     :return:
     """
+    # return k * math.log10(x / k)
     return (x ** 2) / k
 
 
@@ -92,24 +93,24 @@ class FruchtermanReingold(Layout):
 
         # fuerza de repulsion
         for v in self.grafo.nodos.values():
-            v.atributos['disp'] = numpy.array([0, 0])
+            v.atrib['disp'] = numpy.array([0, 0])
             for u in self.grafo.nodos.values():
                 if v != u:
-                    delta = v.atributos['pos'] - u.atributos['pos']
-                    v.atributos['disp'] = v.atributos['disp'] + (delta / mag(delta)) * fr(self.k, mag(delta))
+                    delta = v.atrib['pos'] - u.atrib['pos']
+                    v.atrib['disp'] = v.atrib['disp'] + (delta / mag(delta)) * fr(self.k, mag(delta))
 
         # fuerza de atracción
         for e in self.grafo.aristas.values():
-            delta = e.n0.atributos['pos'] - e.n1.atributos['pos']
-            e.n0.atributos['disp'] = e.n0.atributos['disp'] - (delta / mag(delta)) * fa(self.k, mag(delta))
-            e.n1.atributos['disp'] = e.n1.atributos['disp'] + (delta / mag(delta)) * fa(self.k, mag(delta))
+            delta = e.n0.atrib['pos'] - e.n1.atrib['pos']
+            e.n0.atrib['disp'] = e.n0.atrib['disp'] - (delta / mag(delta)) * fa(self.k, mag(delta))
+            e.n1.atrib['disp'] = e.n1.atrib['disp'] + (delta / mag(delta)) * fa(self.k, mag(delta))
 
         # mover los nodos de acuerdo a la fuerza resultante
         dif = numpy.array([0, 0])
         for v in self.grafo.nodos.values():
-            dif = dif + (v.atributos['disp'] / mag(v.atributos['disp'])) * self.avance
-            v.atributos['pos'] = v.atributos['pos'] + (v.atributos['disp'] / mag(v.atributos['disp'])) * self.avance
-            self.energia = self.energia + mag(v.atributos['disp']) ** 2
+            dif = dif + (v.atrib['disp'] / mag(v.atrib['disp'])) * self.avance
+            v.atrib['pos'] = v.atrib['pos'] + (v.atrib['disp'] / mag(v.atrib['disp'])) * self.avance
+            self.energia = self.energia + mag(v.atrib['disp']) ** 2
 
         self.actualizar_paso(energia_anterior)
 
@@ -153,9 +154,9 @@ class BarnesHut(Layout):
         self.theta = 1
         self.k = math.sqrt((self.res[0] * self.res[1]) / len(self.grafo.nodos))
         self.t = 0.95
-        self.avance = 50
-        self.repeticiones_para_bajar = 20
-        self.umbral_convergencia = len(g.nodos) / 100
+        self.avance = 25
+        self.repeticiones_para_bajar = 5
+        self.umbral_convergencia = min(3.0, len(g.nodos) / 100)
         self.convergio = False
         self.energia = math.inf
         self.energia_inicial = 0
@@ -163,21 +164,21 @@ class BarnesHut(Layout):
         self.atributos = {}
         self.pasos = 0
 
-        # self.atributos['paso'] = self.atributos['k']
+        # self.atrib['paso'] = self.atrib['k']
 
     def construye_quadtree(self):
-        self.qtree = QuadTree(Rectangulo(self.grafo.I[0], self.grafo.I[1], self.grafo.F[0], self.grafo.F[1]), self.puntos_por_region)
+        self.qtree = QuadTree(Rectangulo(self.grafo.extent[0][0], self.grafo.extent[0][1], self.grafo.extent[1][0], self.grafo.extent[1][1]), self.puntos_por_region)
         for v in self.grafo.nodos.values():
-            p = Punto(v.atributos['pos'][0], v.atributos['pos'][1], v)
+            p = Punto(v.atrib['pos'][0], v.atrib['pos'][1], v)
             self.qtree.insertar(p)
 
     def calcular_masas(self, qtree):
-        qtree.atributos['centro_de_masa'] = numpy.array([0, 0])
-        qtree.atributos['masa'] = 0
+        qtree.atrib['centro_de_masa'] = numpy.array([0, 0])
+        qtree.atrib['masa'] = 0
 
         for p in qtree.puntos:
-            qtree.atributos['centro_de_masa'] = qtree.atributos['centro_de_masa'] + numpy.array([p.x, p.y])
-            qtree.atributos['masa'] = qtree.atributos['masa'] + 1
+            qtree.atrib['centro_de_masa'] = qtree.atrib['centro_de_masa'] + numpy.array([p.x, p.y])
+            qtree.atrib['masa'] = qtree.atrib['masa'] + 1
 
         if qtree.esta_dividido:
             self.calcular_masas(qtree.I)
@@ -185,31 +186,31 @@ class BarnesHut(Layout):
             self.calcular_masas(qtree.III)
             self.calcular_masas(qtree.IV)
 
-            if qtree.I.atributos['masa'] > 0:
-                qtree.atributos['masa'] = qtree.atributos['masa'] + qtree.I.atributos['masa']
-                qtree.atributos['centro_de_masa'] = qtree.atributos['centro_de_masa'] + qtree.I.atributos['centro_de_masa'] * \
-                                                    qtree.I.atributos['masa']
+            if qtree.I.atrib['masa'] > 0:
+                qtree.atrib['masa'] = qtree.atrib['masa'] + qtree.I.atrib['masa']
+                qtree.atrib['centro_de_masa'] = qtree.atrib['centro_de_masa'] + qtree.I.atrib['centro_de_masa'] * \
+                                                qtree.I.atrib['masa']
 
-            if qtree.II.atributos['masa'] > 0:
-                qtree.atributos['masa'] = qtree.atributos['masa'] + qtree.II.atributos['masa']
-                qtree.atributos['centro_de_masa'] = qtree.atributos['centro_de_masa'] + qtree.II.atributos['centro_de_masa'] * \
-                                                    qtree.II.atributos['masa']
+            if qtree.II.atrib['masa'] > 0:
+                qtree.atrib['masa'] = qtree.atrib['masa'] + qtree.II.atrib['masa']
+                qtree.atrib['centro_de_masa'] = qtree.atrib['centro_de_masa'] + qtree.II.atrib['centro_de_masa'] * \
+                                                qtree.II.atrib['masa']
 
-            if qtree.III.atributos['masa'] > 0:
-                qtree.atributos['masa'] = qtree.atributos['masa'] + qtree.III.atributos['masa']
-                qtree.atributos['centro_de_masa'] = qtree.atributos['centro_de_masa'] + qtree.III.atributos['centro_de_masa'] * \
-                                                    qtree.III.atributos['masa']
+            if qtree.III.atrib['masa'] > 0:
+                qtree.atrib['masa'] = qtree.atrib['masa'] + qtree.III.atrib['masa']
+                qtree.atrib['centro_de_masa'] = qtree.atrib['centro_de_masa'] + qtree.III.atrib['centro_de_masa'] * \
+                                                qtree.III.atrib['masa']
 
-            if qtree.IV.atributos['masa'] > 0:
-                qtree.atributos['masa'] = qtree.atributos['masa'] + qtree.IV.atributos['masa']
-                qtree.atributos['centro_de_masa'] = qtree.atributos['centro_de_masa'] + qtree.IV.atributos['centro_de_masa'] * \
-                                                    qtree.IV.atributos['masa']
+            if qtree.IV.atrib['masa'] > 0:
+                qtree.atrib['masa'] = qtree.atrib['masa'] + qtree.IV.atrib['masa']
+                qtree.atrib['centro_de_masa'] = qtree.atrib['centro_de_masa'] + qtree.IV.atrib['centro_de_masa'] * \
+                                                qtree.IV.atrib['masa']
 
-        if qtree.atributos['masa'] > 0:
-            qtree.atributos['centro_de_masa'] = qtree.atributos['centro_de_masa'] / qtree.atributos['masa']
+        if qtree.atrib['masa'] > 0:
+            qtree.atrib['centro_de_masa'] = qtree.atrib['centro_de_masa'] / qtree.atrib['masa']
 
     def calcular_fuerza_de_repulsion(self, p, qtree):
-        delta = p.atributos['pos'] - qtree.atributos['centro_de_masa']
+        delta = p.atrib['pos'] - qtree.atrib['centro_de_masa']
 
         r = numpy.linalg.norm(delta)
         d = math.sqrt(qtree.limite.w * qtree.limite.h)
@@ -218,7 +219,7 @@ class BarnesHut(Layout):
             return numpy.array([0, 0])
 
         if d / r < self.theta or not qtree.esta_dividido:
-            return (delta / r) * fr(self.k, r) * qtree.atributos['masa']
+            return (delta / r) * fr(self.k, r) * qtree.atrib['masa']
         else:
             fuerza = self.calcular_fuerza_de_repulsion(p, qtree.I)
             fuerza = fuerza + self.calcular_fuerza_de_repulsion(p, qtree.II)
@@ -244,20 +245,20 @@ class BarnesHut(Layout):
 
         # fuerza de repulsion
         for v in self.grafo.nodos.values():
-            v.atributos['disp'] = self.calcular_fuerza_de_repulsion(v, self.qtree)
+            v.atrib['disp'] = self.calcular_fuerza_de_repulsion(v, self.qtree)
 
         # fuerza de atracción
         for e in self.grafo.aristas.values():
-            delta = e.n0.atributos['pos'] - e.n1.atributos['pos']
+            delta = e.n0.atrib['pos'] - e.n1.atrib['pos']
             m = mag(delta)
             if m > 0:
-                e.n0.atributos['disp'] = e.n0.atributos['disp'] - (delta / m) * fa(self.k, m)
-                e.n1.atributos['disp'] = e.n1.atributos['disp'] + (delta / m) * fa(self.k, m)
+                e.n0.atrib['disp'] -= (delta / m) * fa(self.k, m)
+                e.n1.atrib['disp'] += (delta / m) * fa(self.k, m)
 
         # mover los nodos de acuerdo a la fuerza resultante
         for v in self.grafo.nodos.values():
-            m = mag(v.atributos['disp'])
-            v.atributos['pos'] = v.atributos['pos'] + (v.atributos['disp'] / m) * self.avance
+            m = mag(v.atrib['disp'])
+            v.atrib['pos'] = v.atrib['pos'] + (v.atrib['disp'] / m) * self.avance
             self.energia += m ** 2
 
         self.actualizar_paso(energia_anterior)
@@ -271,7 +272,7 @@ class BarnesHut(Layout):
         :param energia_anterior: valor de energía anterior
         :return: None
         """
-        print(self.pasos, math.sqrt(self.energia) / (len(self.grafo.nodos) * 10), self.avance)
+        # print(self.pasos, math.sqrt(self.energia) / (len(self.grafo.nodos) * 10), self.avance)
         if math.sqrt(self.energia) / (len(self.grafo.nodos) * 10) < self.umbral_convergencia or self.avance < 1:
             print('Convergió.')
             self.convergio = True
@@ -313,34 +314,34 @@ class Spring(Layout):
         :return: True si el algoritmo ha convergido, False de otra forma
         """
         for n in self.grafo.nodos.values():
-            n.atributos['disp'] = numpy.array([0, 0])
+            n.atrib['disp'] = numpy.array([0, 0])
 
         for e in self.grafo.aristas.values():
-            f = e.n0.atributos['pos'] - e.n1.atributos['pos']
+            f = e.n0.atrib['pos'] - e.n1.atrib['pos']
             d = numpy.linalg.norm(f)
             f = (f / d) * math.log10(d / self.c2) * self.c4
-            e.n0.atributos['disp'] = e.n0.atributos['disp'] - f
-            e.n1.atributos['disp'] = e.n1.atributos['disp'] + f
+            e.n0.atrib['disp'] = e.n0.atrib['disp'] - f
+            e.n1.atrib['disp'] = e.n1.atrib['disp'] + f
 
         disp = 0
         for n in self.grafo.nodos.values():
-            disp = max(disp, numpy.linalg.norm(n.atributos['disp']))
-            n.atributos['pos'] = n.atributos['pos'] + n.atributos['disp']
+            disp = max(disp, numpy.linalg.norm(n.atrib['disp']))
+            n.atrib['pos'] = n.atrib['pos'] + n.atrib['disp']
 
-        # print(disp * len(self.grafo.nodos), self.atributos['k'])
+        # print(disp * len(self.grafo.nodos), self.atrib['k'])
         if (disp * len(self.grafo.nodos)) < self.k and self.expandir:
             self.expandir = False
             for a in self.grafo.nodos.values():
-                a.atributos['disp'] = numpy.array([0, 0])
+                a.atrib['disp'] = numpy.array([0, 0])
                 for b in self.grafo.nodos.values():
                     if a != b:
-                        f = a.atributos['pos'] - b.atributos['pos']
+                        f = a.atrib['pos'] - b.atrib['pos']
                         d = numpy.linalg.norm(f)
                         f = (f / d) * fr(self.k, d)
-                        a.atributos['disp'] = a.atributos['disp'] - self.c4 * f
+                        a.atrib['disp'] = a.atrib['disp'] - self.c4 * f
 
             for n in self.grafo.nodos.values():
-                n.atributos['pos'] = n.atributos['pos'] + n.atributos['disp'] * (0.1 / self.c4)
+                n.atrib['pos'] = n.atrib['pos'] + n.atrib['disp'] * (0.1 / self.c4)
 
         self.grafo.calcular_limites()
 

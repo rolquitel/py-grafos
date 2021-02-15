@@ -3,6 +3,7 @@ import random
 
 from grafo import Grafo, NODE_NAME_PREFIX, X_ATTR, Y_ATTR
 
+
 def dist(a, b):
     """
     Calcula la distancia entre los puntos a y b
@@ -11,7 +12,7 @@ def dist(a, b):
     :return:
     """
     return math.sqrt(
-        (a.atributos[X_ATTR] - b.atributos[X_ATTR])**2 + (a.atributos[Y_ATTR] - b.atributos[Y_ATTR])**2)
+        (a.atrib[X_ATTR] - b.atrib[X_ATTR]) ** 2 + (a.atrib[Y_ATTR] - b.atrib[Y_ATTR]) ** 2)
 
 
 def randomArray(size):
@@ -58,6 +59,7 @@ def randomErdos(n, m):
 
     return g
 
+
 def randomGilbert(n, p):
     """
     Genera grafo aleatorio con el método de Gilbert
@@ -74,9 +76,11 @@ def randomGilbert(n, p):
         for j in range(n):
             if random.random() < p:
                 if (j != i):
-                    g.agregarArista(NODE_NAME_PREFIX + str(i) + '->' + NODE_NAME_PREFIX + str(j), NODE_NAME_PREFIX + str(i),
+                    g.agregarArista(NODE_NAME_PREFIX + str(i) + '->' + NODE_NAME_PREFIX + str(j),
+                                    NODE_NAME_PREFIX + str(i),
                                     NODE_NAME_PREFIX + str(j))
     return g
+
 
 def randomGeo(n, r):
     """
@@ -90,8 +94,8 @@ def randomGeo(n, r):
     # Generar n nodos con coordenadas en el espacio ((0,0),(1,1))
     for i in range(n):
         node = g.agregarNodo(NODE_NAME_PREFIX + str(i))
-        node.atributos[X_ATTR] = random.random()
-        node.atributos[Y_ATTR] = random.random()
+        node.atrib[X_ATTR] = random.random()
+        node.atrib[Y_ATTR] = random.random()
 
     # Crear una arista entre cada par de nodos que están a distancia <= r
     for i in range(n):
@@ -99,10 +103,12 @@ def randomGeo(n, r):
             if i != j:
                 d = dist(g.obtNodo(NODE_NAME_PREFIX + str(i)), g.obtNodo(NODE_NAME_PREFIX + str(j)))
                 if d <= r:
-                    g.agregarArista(NODE_NAME_PREFIX + str(i) + '->' + NODE_NAME_PREFIX + str(j), NODE_NAME_PREFIX + str(i),
+                    g.agregarArista(NODE_NAME_PREFIX + str(i) + '->' + NODE_NAME_PREFIX + str(j),
+                                    NODE_NAME_PREFIX + str(i),
                                     NODE_NAME_PREFIX + str(j))
 
     return g
+
 
 def randomBarabasi(n, d):
     """
@@ -123,5 +129,44 @@ def randomBarabasi(n, d):
                 if randomNodes[v] != u:
                     g.agregarArista(NODE_NAME_PREFIX + str(u) + '->' + NODE_NAME_PREFIX + str(randomNodes[v]),
                                     NODE_NAME_PREFIX + str(u), NODE_NAME_PREFIX + str(randomNodes[v]))
+
+    return g
+
+
+def nombreNodo(i):
+    return NODE_NAME_PREFIX + str(i)
+
+
+def nombreArista(i, j):
+    return nombreNodo(i) + '->' + nombreNodo(j)
+
+
+def grafoMalla(m, n=0, diagonales=False):
+    if n == 0:
+        n = m
+
+    m = max(2, m)
+    n = max(2, n)
+
+    g = Grafo()
+
+    for i in range(m):
+        for j in range(n):
+            if j < n - 1:
+                g.agregarArista(nombreArista(i * n + j, i * n + j + 1),
+                                nombreNodo(i * n + j),
+                                nombreNodo(i * n + j + 1))
+            if i < m - 1:
+                g.agregarArista(nombreArista(i * n + j, (i + 1) * n + j),
+                                nombreNodo(i * n + j),
+                                nombreNodo((i + 1) * n + j))
+            if i < m - 1 and j < n - 1 and diagonales:
+                g.agregarArista(nombreArista(i * n + j, (i + 1) * n + j + 1),
+                                nombreNodo(i * n + j),
+                                nombreNodo((i + 1) * n + j + 1))
+            if i > 0 and j < n - 1 and diagonales:
+                g.agregarArista(nombreArista(i * n + j, (i - 1) * n + j + 1),
+                                nombreNodo(i * n + j),
+                                nombreNodo((i - 1) * n + j + 1))
 
     return g

@@ -3,6 +3,7 @@ import time
 
 import algoritmos
 import layout
+from arista import Arista
 from grafo import Grafo
 
 # Press the green button in the gutter to run the script.
@@ -12,24 +13,19 @@ if __name__ == '__main__':
     # random.seed(time.clock())
     g = Grafo()
 
+    g = algoritmos.grafoMalla(15, diagonales=True)
     # g = algoritmos.randomErdos(300, 5000)
-    # g = algoritmos.randomBarabasi(50, 6)
-    # g = algoritmos.randomGeo(100, 0.25)
-    # g.guardar('grafos/erdos.300.5k.gv')
-    g.abrir('grafos/barabasi.500.6.gv')
+    # g = algoritmos.randomBarabasi(1000, 20)
+    # g = algoritmos.randomGeo(700, 0.10)
+    # g.guardar('grafos/geo.700.10.gv')
+    # g.abrir('grafos/geo.300.15.gv')
+    # g.abrir('grafos/barabasi.500.8.gv')
 
-    g.atributos['estilo.fondo'] = (250, 250, 250)
+    g.estilo(Grafo.ESTILO_FONDO, (250, 250, 250))
     for a in g.aristas.values():
-        a.atributos['estilo.color'] = (200, 200, 200)
+        a.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR] = (200, 200, 200)
     for n in g.nodos.values():
-        n.atributos['estilo.tamaño'] = 5 + 0.1 * len(n.atributos[Nodo.ATTR_VECINOS])
-        n.atributos['estilo.color_relleno'] = (random.randint(50, 250), random.randint(50, 250), random.randint(50, 250))
-        n.atributos['estilo.mostrarId?'] = False
-        n.atributos['estilo.escalar?'] = False
+        n.estilo(Nodo.ESTILO_TAMANO, 5 + 0.1 * len(n.atrib[Nodo.ATTR_VECINOS]))
+        n.estilo(Nodo.ESTILO_COL_RELLENO, (random.randint(50, 250), random.randint(50, 250), random.randint(50, 250)))
 
-    spring = layout.Spring(g, (1000, 1000))
-    force = layout.FruchtermanReingold(g, (1000, 1000))
     g.mostrar((1000, 1000), None)
-
-
-

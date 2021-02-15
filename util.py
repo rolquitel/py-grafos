@@ -49,29 +49,59 @@ def arco(surf, color, a, b):
 
 
 class Transformacion:
-    def __init__(self, i, f, I, F, contenido=1):
-        self.i = i = numpy.array(i)
-        self.f = f = numpy.array(f)
-        self.I = I = numpy.array(I)
-        self.F = F = numpy.array(F)
-        self.t = f - i
-        self.T = F - I
-        self.contenido = contenido
+    """
+    Clase para transformar dado un espacio real, denotado por una extensión, y un viewport
+    """
+    def __init__(self, ext, vp):
+        """
+        Constructor de la clase
+        :param ext: extensión del espacio real
+        :param vp: viewport
+        """
+        self.viewport = vp
+        self.extent = ext
+        self.T = vp[1] - vp[0]      # tamaño del viewport
+        self.t = ext[1] - ext[0]    # tamaño del espacio
 
-        marco = (1 - contenido) / 2
+        Sx = self.T[0] / self.t[0]  # escala en x
+        Sy = self.T[1] / self.t[1]  # escala en y
 
-        Sx = (F[0] - I[0]) / (f[0] - i[0])
-        Sy = (F[0] - I[0]) / (f[1] - i[1])
-
+        """
+        Lo siguiente se hace para que se mantenga la relación de aspecto de forma tal que pueda hacer un desplazamiento
+        de tal forma que el espacio quede centrado en el eje más pequeño
+        """
         if Sx > Sy:
-            self.escala = Sy * contenido
-            desp = (Sx - Sy) / (2 * Sx) + marco
-            self.offset = numpy.array([self.T[0] * desp, self.T[1] * marco])
+            self.escala = Sy
+            desp = (Sx - Sy) / (2 * Sx)
+            self.offset = numpy.array([self.T[0] * desp, 0])
         else:
-            self.escala = Sx * contenido
-            desp = (Sy - Sx) / (2 * Sy) + marco
-            self.offset = numpy.array([self.T[0] * marco, self.T[1] * desp])
+            self.escala = Sx
+            desp = (Sy - Sx) / (2 * Sy)
+            self.offset = numpy.array([0, self.T[1] * desp])
 
     def transformar(self, punto):
-        punto = numpy.array(punto)
-        return self.escala * (punto - self.i) + self.offset
+        # punto = numpy.array(punto)
+        return self.escala * (punto - self.extent[0]) + self.viewport[0] + self.offset
+
+
+class Viewport:
+    def __init__(self, rect, surf, res):
+        self.rect = rect
+        self.surf = surf
+        self.res = res
+
+    def tam(self):
+        return self.rect[1] - self.rect[0]
+
+    def zoom(self, z):
+        center = (self.rect[1] + self.rect[0]) / 2
+        self.rect[0] = (self.rect[0] - center) * z + center
+        self.rect[1] = (self.rect[1] - center) * z + center
+
+
+class Extent:
+    def __init__(self, rect):
+        self.rect = rect
+
+    def tam(self):
+        return self.rect[1] - self.rect[0]

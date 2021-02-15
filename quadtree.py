@@ -65,7 +65,7 @@ class QuadTree:
         self.capacidad = capacidad
         self.puntos = []
         self.esta_dividido = False
-        self.atributos = {}
+        self.atrib = {}
 
     def subdividir(self):
         xi = self.limite.xi
