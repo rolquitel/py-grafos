@@ -128,18 +128,17 @@ class Grafo:
 
         return retVal
 
-    def calcular_limites(self):
+    def calcular_extension(self):
         I = numpy.array([math.inf, math.inf])
         F = numpy.array([-math.inf, -math.inf])
         for v in self.nodos.values():
-            I[0] = min(I[0], v.atrib['pos'][0])
-            I[1] = min(I[1], v.atrib['pos'][1])
-            F[0] = max(F[0], v.atrib['pos'][0])
-            F[1] = max(F[1], v.atrib['pos'][1])
+            I[0] = min(I[0], v.atrib[Nodo.ATTR_POS][0])
+            I[1] = min(I[1], v.atrib[Nodo.ATTR_POS][1])
+            F[0] = max(F[0], v.atrib[Nodo.ATTR_POS][0])
+            F[1] = max(F[1], v.atrib[Nodo.ATTR_POS][1])
 
         self.extent = numpy.array([I, F])
-
-        self.transformacion = Transformacion(self.extent, self.viewport.rect)
+        return self.extent
 
     def estilo(self, est, val):
         self.atrib[Grafo.ATTR_ESTILO][est] = val
@@ -150,6 +149,9 @@ class Grafo:
         :param screen: handle del área de dibujo
         :return:
         """
+        self.calcular_extension()
+        self.transformacion = Transformacion(self.extent, self.viewport.rect)
+
         self.viewport.surf.fill(self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_FONDO])
 
         if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_EXTENSION]:
@@ -160,21 +162,14 @@ class Grafo:
         if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_VIEWPORT]:
             dibujar_rect_punteado(self.viewport.surf, (255, 128, 128), self.viewport.rect[0], self.viewport.rect[1])
 
+        for v in self.nodos.values():
+            v.atrib[Nodo.ATTR_POS_VP] = self.transformacion.transformar(v.atrib[Nodo.ATTR_POS])
+
         for a in self.aristas.values():
             a.dibujar(self)
 
         for v in self.nodos.values():
             v.dibujar(self)
-
-        # self.layout.qtree.dibujar(self.screen, 'red', self.transformacion)
-
-    def posicionar_nodos_al_azar(self):
-        origen = self.viewport.res / 2
-        for v in self.nodos.values():
-            v.atrib['pos'] = numpy.array(
-                [random.randint(-origen[0], origen[0]), random.randint(-origen[1], origen[1])])
-
-        self.calcular_limites()
 
     def posicionar_nodos_malla(self):
         lado = int(math.ceil(math.sqrt(len(self.nodos))))
@@ -185,15 +180,13 @@ class Grafo:
         for v in self.nodos.values():
             x = tam[0] * int((n % lado) + 1) - origen[0]
             y = tam[1] * int((n / lado) + 1) - origen[1]
-            v.atrib['pos'] = numpy.array([x, y])
+            v.atrib[Nodo.ATTR_POS] = numpy.array([x, y])
             n = n + 1
-
-        self.calcular_limites()
 
     def mostrar(self, res, lyout=None):
         pause = False
         running = True
-        CPS = 30
+        CPS = 60
         marco = 0.05
 
         pygame.init()
@@ -207,8 +200,8 @@ class Grafo:
 
         layinout = False
 
-        self.posicionar_nodos_al_azar()
-        self.calcular_limites()
+        self.layout = layout.Random(self)
+        self.layout.ejecutar()
 
         fpsClock = pygame.time.Clock()
 
@@ -219,30 +212,37 @@ class Grafo:
                     pressed = pygame.key.get_pressed()
                     if pressed[pygame.K_SPACE]:
                         pause = not pause
-                    elif pressed[pygame.K_l]:
-                        if layinout:
-                            layinout = False
-                        else:
+                    elif pressed[pygame.K_b]:
+                        if not layinout:
                             layinout = True
-                            self.layout = layout.BarnesHut(self, res)
+                            self.layout = layout.BarnesHut(self)
                             # self.layout.avance = 50
                             # self.layout.repeticiones_para_bajar = 20
                             self.layout.umbral_convergencia = 1.0
+                    elif pressed[pygame.K_s]:
+                        if not layinout:
+                            layinout = True
+                            self.layout = layout.Spring(self)
+                    elif pressed[pygame.K_f]:
+                        if not layinout:
+                            layinout = True
+                            self.layout = layout.FruchtermanReingold(self)
+                    elif pressed[pygame.K_ESCAPE]:
+                        layinout = False
                     elif pressed[pygame.K_a]:
                         for a in self.aristas.values():
-                            a.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_ANTIALIAS] = not a.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_ANTIALIAS]
+                            a.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_ANTIALIAS] = not a.atrib[Arista.ATTR_ESTILO][
+                                Arista.ESTILO_ANTIALIAS]
                     elif pressed[pygame.K_r]:
                         if not layinout:
-                            self.posicionar_nodos_al_azar()
+                            layout.Random(self).ejecutar()
                     elif pressed[pygame.K_g]:
                         if not layinout:
-                            self.posicionar_nodos_malla()
+                            layout.Grid(self).ejecutar()
                     elif pressed[pygame.K_PLUS]:
                         self.viewport.zoom(1.5)
-                        self.transformacion = Transformacion(self.extent, self.viewport.rect)
                     elif pressed[pygame.K_MINUS]:
                         self.viewport.zoom(1 / 1.5)
-                        self.transformacion = Transformacion(self.extent, self.viewport.rect)
 
                 if event.type == pygame.QUIT:
                     layout.parar_layout = True
@@ -257,12 +257,8 @@ class Grafo:
             if pause:
                 continue
 
-
-
             if layinout:
-                self.layout.paso()
-                if self.layout.convergio:
-                    layinout = False
+                layinout = not self.layout.paso()
 
             self.dibujar()
 

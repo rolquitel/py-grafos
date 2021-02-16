@@ -8,6 +8,9 @@ class Nodo:
     ATTR_VECINOS = '__vecinos__'
     ATTR_ARISTAS = '__aristas__'
     ATTR_ESTILO = '__estilo__'
+    ATTR_POS = '__pos__'
+    ATTR_POS_VP = '__POS__'
+    ATTR_DESP = '__desp__'
 
     FORMA_CIRCULAR = 'circulo'
     FORMA_CUADRADA = 'cuadro'
@@ -66,7 +69,8 @@ class Nodo:
         :param g:
         :return:
         """
-        pos = g.transformacion.transformar(self.atrib['pos'])
+        # pos = g.transformacion.transformar(self.atrib[Nodo.ATTR_POS])
+        pos = self.atrib[Nodo.ATTR_POS_VP]
         if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_ESCALAR]:
             tam2 = self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_TAMANO] * g.escala
         else:

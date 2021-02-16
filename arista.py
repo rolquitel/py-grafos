@@ -2,6 +2,7 @@ import math
 import pygame
 import numpy
 
+from nodo import Nodo
 from util import dibujar_linea_punteada
 
 
@@ -63,8 +64,10 @@ class Arista:
         :param origin: valor del origen
         :return:
         """
-        n0 = g.transformacion.transformar(self.n0.atrib['pos'])
-        n1 = g.transformacion.transformar(self.n1.atrib['pos'])
+        # n0 = g.transformacion.transformar(self.n0.atrib[Nodo.ATTR_POS])
+        # n1 = g.transformacion.transformar(self.n1.atrib[Nodo.ATTR_POS])
+        n0 = self.n0.atrib[Nodo.ATTR_POS_VP]
+        n1 = self.n1.atrib[Nodo.ATTR_POS_VP]
         if self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_DISCONTINUO]:
             dibujar_linea_punteada(g.screen, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
                                    n0,
@@ -84,7 +87,7 @@ class Arista:
 
         try:
             if self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_MOSTRAR_ID]:
-                pos = (g.escala * ((self.n0.atrib['pos'] + self.n1.atrib['pos']) / 2) + g.origen)
+                pos = (g.escala * ((self.n0.atrib[Nodo.ATTR_POS] + self.n1.atrib[Nodo.ATTR_POS]) / 2) + g.origen)
                 lon = len(str(self.id)) * g.tam_fuente / 4
                 g.fuente.render_to(g.screen,
                                    (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id),

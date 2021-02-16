@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # random.seed(time.clock())
     g = Grafo()
 
-    g = algoritmos.grafoMalla(15, diagonales=True)
+    g = algoritmos.grafoMalla(12, diagonales=True)
     # g = algoritmos.randomErdos(300, 5000)
     # g = algoritmos.randomBarabasi(1000, 20)
     # g = algoritmos.randomGeo(700, 0.10)
