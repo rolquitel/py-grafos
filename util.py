@@ -31,6 +31,7 @@ class Transformacion:
     """
     Clase para transformar dado un espacio real, denotado por una extensión, y un viewport
     """
+
     def __init__(self, ext, vp):
         """
         Constructor de la clase
@@ -39,8 +40,8 @@ class Transformacion:
         """
         self.viewport = vp
         self.extent = ext
-        self.T = vp[1] - vp[0]      # tamaño del viewport
-        self.t = ext[1] - ext[0]    # tamaño del espacio
+        self.T = vp[1] - vp[0]  # tamaño del viewport
+        self.t = ext[1] - ext[0]  # tamaño del espacio
 
         Sx = self.T[0] / self.t[0]  # escala en x
         Sy = self.T[1] / self.t[1]  # escala en y
@@ -88,9 +89,70 @@ class Viewport:
     def text(self, pos, col, cad):
         self.fuente.render_to(self.surf, pos, cad, col)
 
+    def manage_input(self):
+        ev = pygame.event.get()
+        for event in ev:
+            if event.type == pygame.KEYDOWN:
+                pressed = pygame.key.get_pressed()
+                if pressed[pygame.K_SPACE]:
+                    self.pause = not self.pause
+                elif pressed[pygame.K_b]:
+                    if not self.layinout:
+                        self.layinout = True
+                        self.layout = layout.BarnesHut(self.grafo)
+                        self.layout.umbral_convergencia = 1.0
+                elif pressed[pygame.K_s]:
+                    if not self.layinout:
+                        self.layinout = True
+                        self.layout = layout.Spring(self.grafo)
+                elif pressed[pygame.K_f]:
+                    if not self.layinout:
+                        self.layinout = True
+                        self.layout = layout.FruchtermanReingold(self.grafo)
+                elif pressed[pygame.K_ESCAPE]:
+                    self.layinout = False
+                elif pressed[pygame.K_a]:
+                    for a in g.aristas.values():
+                        a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS] = \
+                            not a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS]
+                elif pressed[pygame.K_r]:
+                    if not self.layinout:
+                        layout.Random(self.grafo).ejecutar()
+                elif pressed[pygame.K_g]:
+                    if not self.layinout:
+                        layout.Grid(self.grafo).ejecutar()
+                elif pressed[pygame.K_PLUS]:
+                    self.zoom(1.5)
+                elif pressed[pygame.K_MINUS]:
+                    self.zoom(1 / 1.5)
+                elif pressed[pygame.K_LEFT]:
+                    self.pan(0, -10)
+                elif pressed[pygame.K_RIGHT]:
+                    self.pan(0, 10)
+                elif pressed[pygame.K_UP]:
+                    self.pan(1, -10)
+                elif pressed[pygame.K_DOWN]:
+                    self.pan(1, 10)
+
+            if event.type == pygame.QUIT:
+                layout.parar_layout = True
+                self.running = False
+
+            # mouseClick = pygame.mouse.get_pressed()
+            # if sum(mouseClick) > 0:
+            #     posX, posY = pygame.mouse.get_pos()
+            #     celX, celY = int(np.floor(posX / dim)), int(np.floor(posY / dim) )
+            #     newGameState[celX, celY] = 1
+
     def show(self, g, res):
-        pause = False
-        running = True
+        """
+        Mostrar grafo en el viewport
+        :param g: grafo a dibujar
+        :param res: resolución
+        :return:
+        """
+        self.pause = False
+        self.running = True
         CPS = 60
         marco = 0.05
 
@@ -99,77 +161,26 @@ class Viewport:
         self.set_font()
         res = numpy.array(res)
         self.rect = [marco * res, (1 - marco) * res]
-        layinout = False
+        self.layinout = False
+        self.grafo = g
 
         self.layout = layout.Random(g)
         self.layout.ejecutar()
 
         fpsClock = pygame.time.Clock()
 
-        while running:
-            ev = pygame.event.get()
-            for event in ev:
-                if event.type == pygame.KEYDOWN:
-                    pressed = pygame.key.get_pressed()
-                    if pressed[pygame.K_SPACE]:
-                        pause = not pause
-                    elif pressed[pygame.K_b]:
-                        if not layinout:
-                            layinout = True
-                            self.layout = layout.BarnesHut(g)
-                            self.layout.umbral_convergencia = 1.0
-                    elif pressed[pygame.K_s]:
-                        if not layinout:
-                            layinout = True
-                            self.layout = layout.Spring(g)
-                    elif pressed[pygame.K_f]:
-                        if not layinout:
-                            layinout = True
-                            self.layout = layout.FruchtermanReingold(g)
-                    elif pressed[pygame.K_ESCAPE]:
-                        layinout = False
-                    elif pressed[pygame.K_a]:
-                        for a in g.aristas.values():
-                            a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS] = \
-                                not a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS]
-                    elif pressed[pygame.K_r]:
-                        if not layinout:
-                            layout.Random(g).ejecutar()
-                    elif pressed[pygame.K_g]:
-                        if not layinout:
-                            layout.Grid(g).ejecutar()
-                    elif pressed[pygame.K_PLUS]:
-                        self.zoom(1.5)
-                    elif pressed[pygame.K_MINUS]:
-                        self.zoom(1 / 1.5)
-                    elif pressed[pygame.K_LEFT]:
-                        self.pan(0, -10)
-                    elif pressed[pygame.K_RIGHT]:
-                        self.pan(0, 10)
-                    elif pressed[pygame.K_UP]:
-                        self.pan(1, -10)
-                    elif pressed[pygame.K_DOWN]:
-                        self.pan(1, 10)
+        while self.running:
+            self.manage_input()
 
-                if event.type == pygame.QUIT:
-                    layout.parar_layout = True
-                    running = False
-
-                # mouseClick = pygame.mouse.get_pressed()
-                # if sum(mouseClick) > 0:
-                #     posX, posY = pygame.mouse.get_pos()
-                #     celX, celY = int(np.floor(posX / dim)), int(np.floor(posY / dim) )
-                #     newGameState[celX, celY] = 1
-
-            if pause:
+            if self.pause:
                 continue
 
-            if layinout:
-                layinout = not self.layout.paso()
+            if self.layinout:
+                self.layinout = not self.layout.paso()
 
-            g.dibujar(self)
+            self.grafo.dibujar(self)
 
-            cad = str(len(g.nodos.values())) + ' nodos y ' + str(len(g.aristas.values())) + ' aristas'
+            cad = str(len(g.nodos.values())) + ' nodos y \n' + str(len(g.aristas.values())) + ' aristas'
             self.text((10, 10), (128, 128, 128), cad)
             cad = str(math.ceil(1000 / fpsClock.tick(CPS))) + ' cps'
             self.text((res[0] - 50, res[1] - 15), (128, 128, 128), cad)
