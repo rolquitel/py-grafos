@@ -129,6 +129,10 @@ class Grafo:
         return retVal
 
     def calcular_extension(self):
+        """
+        Calcula el rectangulo que delimita la zona del grafo
+        :return:
+        """
         I = numpy.array([math.inf, math.inf])
         F = numpy.array([-math.inf, -math.inf])
         for v in self.nodos.values():
@@ -140,148 +144,27 @@ class Grafo:
         self.extent = numpy.array([I, F])
         return self.extent
 
-    def estilo(self, est, val):
-        self.atrib[Grafo.ATTR_ESTILO][est] = val
-
-    def dibujar(self):
+    def guardar(self, archivo):
         """
-        Dibujar el grafo, si se llama continuamente va calculando el layout del mismo
-        :param screen: handle del área de dibujo
+        Guarda el grafo en un archivo
+        :param archivo: nombre del archivo
         :return:
         """
-        self.calcular_extension()
-        self.transformacion = Transformacion(self.extent, self.viewport.rect)
-
-        self.viewport.surf.fill(self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_FONDO])
-
-        if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_EXTENSION]:
-            I = self.transformacion.transformar(self.extent[0])
-            F = self.transformacion.transformar(self.extent[1])
-            dibujar_rect_punteado(self.viewport.surf, (128, 128, 128), I, F)
-
-        if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_VIEWPORT]:
-            dibujar_rect_punteado(self.viewport.surf, (255, 128, 128), self.viewport.rect[0], self.viewport.rect[1])
-
-        for v in self.nodos.values():
-            v.atrib[Nodo.ATTR_POS_VP] = self.transformacion.transformar(v.atrib[Nodo.ATTR_POS])
-
-        for a in self.aristas.values():
-            a.dibujar(self)
-
-        for v in self.nodos.values():
-            v.dibujar(self)
-
-    def posicionar_nodos_malla(self):
-        lado = int(math.ceil(math.sqrt(len(self.nodos))))
-        tam = self.viewport.res / (lado + 2)
-        origen = self.viewport.res / 2
-
-        n = 0
-        for v in self.nodos.values():
-            x = tam[0] * int((n % lado) + 1) - origen[0]
-            y = tam[1] * int((n / lado) + 1) - origen[1]
-            v.atrib[Nodo.ATTR_POS] = numpy.array([x, y])
-            n = n + 1
-
-    def mostrar(self, res, lyout=None):
-        pause = False
-        running = True
-        CPS = 60
-        marco = 0.05
-
-        pygame.init()
-        surf = pygame.display.set_mode(res)
-        res = numpy.array(res)
-        self.viewport = Viewport([marco * res, (1 - marco) * res], surf, res)
-        self.tam_fuente = 10
-        self.fuente = pygame.freetype.Font('fonts/courier_b.ttf', self.tam_fuente)
-        self.layout = lyout
-        self.antialias = False
-
-        layinout = False
-
-        self.layout = layout.Random(self)
-        self.layout.ejecutar()
-
-        fpsClock = pygame.time.Clock()
-
-        while running:
-            ev = pygame.event.get()
-            for event in ev:
-                if event.type == pygame.KEYDOWN:
-                    pressed = pygame.key.get_pressed()
-                    if pressed[pygame.K_SPACE]:
-                        pause = not pause
-                    elif pressed[pygame.K_b]:
-                        if not layinout:
-                            layinout = True
-                            self.layout = layout.BarnesHut(self)
-                            # self.layout.avance = 50
-                            # self.layout.repeticiones_para_bajar = 20
-                            self.layout.umbral_convergencia = 1.0
-                    elif pressed[pygame.K_s]:
-                        if not layinout:
-                            layinout = True
-                            self.layout = layout.Spring(self)
-                    elif pressed[pygame.K_f]:
-                        if not layinout:
-                            layinout = True
-                            self.layout = layout.FruchtermanReingold(self)
-                    elif pressed[pygame.K_ESCAPE]:
-                        layinout = False
-                    elif pressed[pygame.K_a]:
-                        for a in self.aristas.values():
-                            a.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_ANTIALIAS] = not a.atrib[Arista.ATTR_ESTILO][
-                                Arista.ESTILO_ANTIALIAS]
-                    elif pressed[pygame.K_r]:
-                        if not layinout:
-                            layout.Random(self).ejecutar()
-                    elif pressed[pygame.K_g]:
-                        if not layinout:
-                            layout.Grid(self).ejecutar()
-                    elif pressed[pygame.K_PLUS]:
-                        self.viewport.zoom(1.5)
-                    elif pressed[pygame.K_MINUS]:
-                        self.viewport.zoom(1 / 1.5)
-
-                if event.type == pygame.QUIT:
-                    layout.parar_layout = True
-                    running = False
-
-                # mouseClick = pygame.mouse.get_pressed()
-                # if sum(mouseClick) > 0:
-                #     posX, posY = pygame.mouse.get_pos()
-                #     celX, celY = int(np.floor(posX / dim)), int(np.floor(posY / dim) )
-                #     newGameState[celX, celY] = 1
-
-            if pause:
-                continue
-
-            if layinout:
-                layinout = not self.layout.paso()
-
-            self.dibujar()
-
-            cad = str(len(self.nodos.values())) + ' nodos y ' + str(len(self.aristas.values())) + ' aristas'
-            self.fuente.render_to(self.viewport.surf, (10, 10), cad, (128, 128, 128))
-            cad = str(math.ceil(1000 / fpsClock.tick(CPS))) + ' cps'
-            self.fuente.render_to(self.viewport.surf, (res[0] - 50, res[1] - 15), cad, (128, 128, 128))
-
-            pygame.display.flip()
-
-    def display_thread(self, res):
-        t = threading.Thread(target=self.mostrar, args=(res,))
-        t.start()
-
-    def guardar(self, archivo):
         print('Guardando', archivo, ' ...', end='')
         gv = self.aGraphviz()
         f = open(archivo, 'w+')
         f.write(gv)
         print('Ok.', len(self.nodos), 'nodos,', len(self.aristas), 'aristas')
 
-    def abrir(self, archivo):
+    @staticmethod
+    def abrir(archivo):
+        """
+        Lee el grafo de un archivo
+        :param archivo: nombre del archivo
+        :return:
+        """
         print('Leyendo', archivo, ' ...', end='')
+        g = Grafo()
         f = open(archivo, 'r')
         lines = f.readlines()
         for i in range(1, len(lines)):
@@ -289,6 +172,44 @@ class Grafo:
             if len(tokens) < 3:
                 continue
             tokens[2] = tokens[2].rstrip(';\n')
-            self.agregarArista(tokens[0] + tokens[1] + tokens[2], tokens[0], tokens[2])
+            g.agregarArista(tokens[0] + tokens[1] + tokens[2], tokens[0], tokens[2])
 
-        print('Ok.', len(self.nodos), 'nodos,', len(self.aristas), 'aristas')
+        print('Ok.', len(g.nodos), 'nodos,', len(g.aristas), 'aristas')
+        return g
+
+    def estilo(self, est, val):
+        """
+        Establece un valor de estilo en el grafo
+        :param est: llave del estilo
+        :param val: valor del estilo
+        :return:
+        """
+        self.atrib[Grafo.ATTR_ESTILO][est] = val
+
+    def dibujar(self, viewport):
+        """
+        Dibuja el grafo en el viewport
+        :param viewport:
+        :return:
+        """
+        self.calcular_extension()
+        self.transformacion = Transformacion(self.extent, viewport.rect)
+
+        viewport.surf.fill(self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_FONDO])
+
+        if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_EXTENSION]:
+            I = self.transformacion.transformar(self.extent[0])
+            F = self.transformacion.transformar(self.extent[1])
+            dibujar_rect_punteado(viewport.surf, (128, 128, 128), I, F)
+
+        if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_VIEWPORT]:
+            dibujar_rect_punteado(viewport.surf, (255, 128, 128), viewport.rect[0], viewport.rect[1])
+
+        for v in self.nodos.values():
+            v.atrib[Nodo.ATTR_POS_VP] = self.transformacion.transformar(v.atrib[Nodo.ATTR_POS])
+
+        for a in self.aristas.values():
+            a.dibujar(viewport)
+
+        for v in self.nodos.values():
+            v.dibujar(viewport)

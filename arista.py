@@ -54,14 +54,18 @@ class Arista:
         return self.id
 
     def estilo(self, est, val):
+        """
+        Establece un valor de estilo en la arista
+        :param est: llave del estilo
+        :param val: valor del estilo
+        :return:
+        """
         self.atrib[Arista.ATTR_ESTILO][est] = val
 
-    def dibujar(self, g):
+    def dibujar(self, viewport):
         """
         Dibuja la arista en la pantalla de acuerdo a los parámetros y a sus propios atrib
-        :param scr: handle de la pantalla
-        :param scale: escala actual
-        :param origin: valor del origen
+        :param viewport:
         :return:
         """
         # n0 = g.transformacion.transformar(self.n0.atrib[Nodo.ATTR_POS])
@@ -69,28 +73,28 @@ class Arista:
         n0 = self.n0.atrib[Nodo.ATTR_POS_VP]
         n1 = self.n1.atrib[Nodo.ATTR_POS_VP]
         if self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_DISCONTINUO]:
-            dibujar_linea_punteada(g.screen, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+            dibujar_linea_punteada(viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
                                    n0,
                                    n1,
                                    self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_GROSOR],
                                    self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_TAMANO])
         elif self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_ANTIALIAS]:
-            pygame.draw.aaline(g.viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+            pygame.draw.aaline(viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
                                n0,
                                n1,
                                self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_GROSOR])
         else:
-            pygame.draw.line(g.viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+            pygame.draw.line(viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
                              n0,
                              n1,
                              self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_GROSOR])
 
         try:
             if self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_MOSTRAR_ID]:
-                pos = (g.escala * ((self.n0.atrib[Nodo.ATTR_POS] + self.n1.atrib[Nodo.ATTR_POS]) / 2) + g.origen)
-                lon = len(str(self.id)) * g.tam_fuente / 4
-                g.fuente.render_to(g.screen,
-                                   (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id),
-                                   self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR])
+                pos = (n0 + n1) / 2
+                lon = len(str(self.id)) * viewport.tam_fuente / 4
+                viewport.text((pos[0] - lon, pos[1] - viewport.tam_fuente / 3),
+                              self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+                              str(self.id))
         except:
             print('Except: g.fuente.render_to()')

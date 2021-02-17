@@ -61,18 +61,23 @@ class Nodo:
         return retVal
 
     def estilo(self, est, val):
-        self.atrib[Nodo.ATTR_ESTILO][est] = val
-
-    def dibujar(self, g):
         """
-        Dibuja el nodo en la pantalla de acuerdo a los parámetros y a sus propios atrib
-        :param g:
+        Establece un valor de estilo en el nodo
+        :param est: llave del estilo
+        :param val: valor del estilo
         :return:
         """
-        # pos = g.transformacion.transformar(self.atrib[Nodo.ATTR_POS])
+        self.atrib[Nodo.ATTR_ESTILO][est] = val
+
+    def dibujar(self, viewport):
+        """
+        Dibuja el nodo en el viewport de acuerdo a sus propios atrib
+        :param viewport: descriptor de la zona de dibujo
+        :return:
+        """
         pos = self.atrib[Nodo.ATTR_POS_VP]
         if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_ESCALAR]:
-            tam2 = self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_TAMANO] * g.escala
+            tam2 = self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_TAMANO] * 1.0
         else:
             tam2 = self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_TAMANO]
 
@@ -80,63 +85,64 @@ class Nodo:
 
         if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_CIRCULAR:
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_RELLENO]:
-                pygame.draw.ellipse(g.viewport.surf,
+                pygame.draw.ellipse(viewport.surf,
                                     self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
                                     (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                     width=0)
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_BORDE]:
-                pygame.draw.ellipse(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+                pygame.draw.ellipse(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                                     (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                     width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_CUADRADA:
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_RELLENO]:
-                pygame.draw.rect(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
+                pygame.draw.rect(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
                                  (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                  width=0)
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_BORDE]:
-                pygame.draw.rect(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+                pygame.draw.rect(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                                  (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                  width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_TRIANGULAR:
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_RELLENO]:
-                pygame.draw.polygon(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
+                pygame.draw.polygon(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
                                     ((pos[0] - tam, pos[1] + tam),
                                      (pos[0], pos[1] - tam),
                                      (pos[0] + tam, pos[1] + tam)),
                                     width=0)
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_BORDE]:
-                pygame.draw.polygon(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+                pygame.draw.polygon(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                                     ((pos[0] - tam, pos[1] + tam),
                                      (pos[0], pos[1] - tam),
                                      (pos[0] + tam, pos[1] + tam)),
                                     width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_TACHE:
-            pygame.draw.line(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0] - tam, pos[1] - tam),
                              (pos[0] + tam, pos[1] + tam),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
-            pygame.draw.line(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0] - tam, pos[1] + tam),
                              (pos[0] + tam, pos[1] - tam),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_CRUZ:
-            pygame.draw.line(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0], pos[1] - tam),
                              (pos[0], pos[1] + tam),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
-            pygame.draw.line(g.viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0] - tam, pos[1]),
                              (pos[0] + tam, pos[1]),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_MOSTRAR_ID]:
-            lon = len(str(self.id)) * g.tam_fuente / 4
+            lon = len(str(self.id)) * viewport.tam_fuente / 4
             try:
-                g.fuente.render_to(g.viewport.surf, (pos[0] - lon, pos[1] - g.tam_fuente / 3), str(self.id),
-                                   self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE])
+                viewport.text((pos[0] - lon, pos[1] - viewport.tam_fuente / 3),
+                              self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+                              str(self.id))
             except:
                 print('Except: g.fuente.render_to()')
