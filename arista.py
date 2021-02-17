@@ -2,6 +2,7 @@ import math
 import pygame
 import numpy
 
+import util
 from nodo import Nodo
 from util import dibujar_linea_punteada
 
@@ -62,14 +63,14 @@ class Arista:
         """
         self.atrib[Arista.ATTR_ESTILO][est] = val
 
-    def dibujar(self, viewport):
+    def dibujar(self, viewport, transform=None):
         """
         Dibuja la arista en la pantalla de acuerdo a los parámetros y a sus propios atrib
         :param viewport:
         :return:
         """
-        # n0 = g.transformacion.transformar(self.n0.atrib[Nodo.ATTR_POS])
-        # n1 = g.transformacion.transformar(self.n1.atrib[Nodo.ATTR_POS])
+        # n0 = g.transform.transformar(self.n0.atrib[Nodo.ATTR_POS])
+        # n1 = g.transform.transformar(self.n1.atrib[Nodo.ATTR_POS])
         n0 = self.n0.atrib[Nodo.ATTR_POS_VP]
         n1 = self.n1.atrib[Nodo.ATTR_POS_VP]
         if self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_DISCONTINUO]:

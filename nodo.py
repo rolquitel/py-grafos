@@ -69,15 +69,15 @@ class Nodo:
         """
         self.atrib[Nodo.ATTR_ESTILO][est] = val
 
-    def dibujar(self, viewport):
+    def dibujar(self, viewport, transform=None):
         """
         Dibuja el nodo en el viewport de acuerdo a sus propios atrib
         :param viewport: descriptor de la zona de dibujo
         :return:
         """
         pos = self.atrib[Nodo.ATTR_POS_VP]
-        if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_ESCALAR]:
-            tam2 = self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_TAMANO] * 1.0
+        if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_ESCALAR] and transform is not None:
+            tam2 = self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_TAMANO] * transform.escala
         else:
             tam2 = self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_TAMANO]
 

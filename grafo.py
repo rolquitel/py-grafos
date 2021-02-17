@@ -212,4 +212,4 @@ class Grafo:
             a.dibujar(viewport)
 
         for v in self.nodos.values():
-            v.dibujar(viewport)
+            v.dibujar(viewport, self.transformacion)

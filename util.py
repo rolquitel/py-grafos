@@ -3,7 +3,6 @@ import numpy
 import pygame
 import pygame.freetype
 import layout
-
 import arista
 
 
@@ -112,7 +111,7 @@ class Viewport:
                 elif pressed[pygame.K_ESCAPE]:
                     self.layinout = False
                 elif pressed[pygame.K_a]:
-                    for a in g.aristas.values():
+                    for a in self.grafo.aristas.values():
                         a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS] = \
                             not a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS]
                 elif pressed[pygame.K_r]:
@@ -180,7 +179,7 @@ class Viewport:
 
             self.grafo.dibujar(self)
 
-            cad = str(len(g.nodos.values())) + ' nodos y \n' + str(len(g.aristas.values())) + ' aristas'
+            cad = str(len(g.nodos.values())) + ' nodos y ' + str(len(g.aristas.values())) + ' aristas'
             self.text((10, 10), (128, 128, 128), cad)
             cad = str(math.ceil(1000 / fpsClock.tick(CPS))) + ' cps'
             self.text((res[0] - 50, res[1] - 15), (128, 128, 128), cad)
