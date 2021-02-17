@@ -4,7 +4,7 @@ import pygame
 import pygame.freetype
 import layout
 
-#from arista import Arista
+import arista
 
 
 def dibujar_linea_punteada(surf, color, start_pos, end_pos, width=1, dash_length=10):
@@ -25,30 +25,6 @@ def dibujar_rect_punteado(surf, color, start_pos, end_pos, width=1, dash_length=
     dibujar_linea_punteada(surf, color, start_pos, [end_pos[0], start_pos[1]], width, dash_length)
     dibujar_linea_punteada(surf, color, end_pos, [start_pos[0], end_pos[1]], width, dash_length)
     dibujar_linea_punteada(surf, color, end_pos, [end_pos[0], start_pos[1]], width, dash_length)
-
-
-# def arco(surf, color, a, b):
-#     try:
-#         alpha = math.pi / 3
-#         a = numpy.array(a)
-#         b = numpy.array(b)
-#         r = numpy.linalg.norm(a - b)
-#         p = (a + b) / 2
-#         m = -(a[0] - b[0]) / (a[1] - b[1])
-#         theta = math.atan(m)
-#         rho = r * math.sin((math.pi - alpha) / 2)
-#         c = numpy.array([p[0] + rho * math.cos(theta), p[1] + rho * math.sin(theta)])
-#         ma = (c[1] - a[1]) / (c[0] - a[0])
-#         mb = (c[1] - b[1]) / (c[0] - b[0])
-#         i = numpy.array([c[0] - r, c[1] - r])
-#
-#         # pygame.draw.circle(surf, color, a, 5)
-#         # pygame.draw.circle(surf, color, b, 5)
-#         # pygame.draw.circle(surf, (200, 0, 0), c, 5, 1)
-#         # pygame.draw.circle(surf, (200, 0, 0), c, r, 1)
-#         pygame.draw.arc(surf, color, (i, (2 * r, 2 * r)), math.atan(-ma) + math.pi, math.atan(-mb) + math.pi)
-#     except ZeroDivisionError:
-#         pygame.draw.line(surf, color, a, b)
 
 
 class Transformacion:
@@ -141,8 +117,6 @@ class Viewport:
                         if not layinout:
                             layinout = True
                             self.layout = layout.BarnesHut(g)
-                            # self.layout.avance = 50
-                            # self.layout.repeticiones_para_bajar = 20
                             self.layout.umbral_convergencia = 1.0
                     elif pressed[pygame.K_s]:
                         if not layinout:
@@ -154,16 +128,16 @@ class Viewport:
                             self.layout = layout.FruchtermanReingold(g)
                     elif pressed[pygame.K_ESCAPE]:
                         layinout = False
-                    # elif pressed[pygame.K_a]:
-                    #     for a in g.aristas.values():
-                    #         a.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_ANTIALIAS] = not a.atrib[Arista.ATTR_ESTILO][
-                    #             Arista.ESTILO_ANTIALIAS]
+                    elif pressed[pygame.K_a]:
+                        for a in g.aristas.values():
+                            a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS] = \
+                                not a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS]
                     elif pressed[pygame.K_r]:
                         if not layinout:
-                            layout.Random(self).ejecutar()
+                            layout.Random(g).ejecutar()
                     elif pressed[pygame.K_g]:
                         if not layinout:
-                            layout.Grid(self).ejecutar()
+                            layout.Grid(g).ejecutar()
                     elif pressed[pygame.K_PLUS]:
                         self.zoom(1.5)
                     elif pressed[pygame.K_MINUS]:
