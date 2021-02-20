@@ -8,7 +8,8 @@ import pygame.freetype
 import layout
 from arista import Arista
 from nodo import Nodo
-from util import dibujar_rect_punteado, Transformacion, Viewport
+from util import dibujar_rect_punteado, Transformacion
+from ui import Viewport
 
 NODE_NAME_PREFIX = 'nodo_'
 X_ATTR = '__x__'
@@ -195,7 +196,7 @@ class Grafo:
         self.calcular_extension()
         self.transformacion = Transformacion(self.extent, viewport.rect)
 
-        viewport.surf.fill(self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_FONDO])
+        # viewport.frame.surf(self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_FONDO])
 
         if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_EXTENSION]:
             I = self.transformacion.transformar(self.extent[0])

@@ -85,55 +85,55 @@ class Nodo:
 
         if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_CIRCULAR:
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_RELLENO]:
-                pygame.draw.ellipse(viewport.surf,
+                pygame.draw.ellipse(viewport.frame.surf,
                                     self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
                                     (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                     width=0)
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_BORDE]:
-                pygame.draw.ellipse(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+                pygame.draw.ellipse(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                                     (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                     width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_CUADRADA:
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_RELLENO]:
-                pygame.draw.rect(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
+                pygame.draw.rect(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
                                  (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                  width=0)
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_BORDE]:
-                pygame.draw.rect(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+                pygame.draw.rect(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                                  (pos[0] - tam, pos[1] - tam, tam2, tam2),
                                  width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_TRIANGULAR:
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_RELLENO]:
-                pygame.draw.polygon(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
+                pygame.draw.polygon(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_RELLENO],
                                     ((pos[0] - tam, pos[1] + tam),
                                      (pos[0], pos[1] - tam),
                                      (pos[0] + tam, pos[1] + tam)),
                                     width=0)
             if self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_BORDE]:
-                pygame.draw.polygon(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+                pygame.draw.polygon(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                                     ((pos[0] - tam, pos[1] + tam),
                                      (pos[0], pos[1] - tam),
                                      (pos[0] + tam, pos[1] + tam)),
                                     width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_TACHE:
-            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0] - tam, pos[1] - tam),
                              (pos[0] + tam, pos[1] + tam),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
-            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0] - tam, pos[1] + tam),
                              (pos[0] + tam, pos[1] - tam),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
 
         elif self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_FORMA] == Nodo.FORMA_CRUZ:
-            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0], pos[1] - tam),
                              (pos[0], pos[1] + tam),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])
-            pygame.draw.line(viewport.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
+            pygame.draw.line(viewport.frame.surf, self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_COL_BORDE],
                              (pos[0] - tam, pos[1]),
                              (pos[0] + tam, pos[1]),
                              width=self.atrib[Nodo.ATTR_ESTILO][Nodo.ESTILO_GROSOR])

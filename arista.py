@@ -69,23 +69,24 @@ class Arista:
         :param viewport:
         :return:
         """
+        surf = viewport.frame.surf
         # n0 = g.transform.transformar(self.n0.atrib[Nodo.ATTR_POS])
         # n1 = g.transform.transformar(self.n1.atrib[Nodo.ATTR_POS])
         n0 = self.n0.atrib[Nodo.ATTR_POS_VP]
         n1 = self.n1.atrib[Nodo.ATTR_POS_VP]
         if self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_DISCONTINUO]:
-            dibujar_linea_punteada(viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+            dibujar_linea_punteada(surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
                                    n0,
                                    n1,
                                    self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_GROSOR],
                                    self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_TAMANO])
         elif self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_ANTIALIAS]:
-            pygame.draw.aaline(viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+            pygame.draw.aaline(surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
                                n0,
                                n1,
                                self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_GROSOR])
         else:
-            pygame.draw.line(viewport.surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+            pygame.draw.line(surf, self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
                              n0,
                              n1,
                              self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_GROSOR])
@@ -94,8 +95,8 @@ class Arista:
             if self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_MOSTRAR_ID]:
                 pos = (n0 + n1) / 2
                 lon = len(str(self.id)) * viewport.tam_fuente / 4
-                viewport.text((pos[0] - lon, pos[1] - viewport.tam_fuente / 3),
-                              self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
-                              str(self.id))
+                viewport.frame.text((pos[0] - lon, pos[1] - viewport.tam_fuente / 3),
+                                    self.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR],
+                                    str(self.id))
         except:
             print('Except: g.fuente.render_to()')
