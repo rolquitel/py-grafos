@@ -12,7 +12,7 @@ from grafo import Grafo
 
 # Press the green button in the gutter to run the script.
 from nodo import Nodo
-from ui import Viewport, Frame
+from ui import Viewport, Frame, ColorScheme, DarkGrayColorScheme, LightGrayColorScheme, BlueRedColorScheme
 
 
 class MyView(Viewport):
@@ -52,17 +52,15 @@ if __name__ == '__main__':
     # g = Grafo.abrir('grafos/geo.200.15.gv')
     # g = Grafo.abrir('grafos/barabasi.500.8.gv')
 
-    g1 = algoritmos.grafoMalla(5, 5, diagonales=True)
-    g2 = algoritmos.grafoMalla(10, 10, diagonales=True)
-    g3 = algoritmos.grafoMalla(15, 15, diagonales=True)
-    g4 = algoritmos.grafoMalla(20, 10, diagonales=True)
+    g1 = algoritmos.grafoMalla( 5,  5, diagonales=False)
+    g2 = algoritmos.grafoMalla(10, 10, diagonales=False)
+    g3 = algoritmos.grafoMalla(15, 15, diagonales=False)
+    g4 = algoritmos.grafoMalla(20, 10, diagonales=False)
 
-    g1.estilo(Grafo.ESTILO_FONDO, (250, 250, 250))
-    for a in g1.aristas.values():
-        a.atrib[Arista.ATTR_ESTILO][Arista.ESTILO_COLOR] = (200, 200, 200)
-    for n in g1.nodos.values():
-        n.estilo(Nodo.ESTILO_TAMANO, 5 + 0.2 * len(n.atrib[Nodo.ATTR_VECINOS]))
-        n.estilo(Nodo.ESTILO_COL_RELLENO, (random.randint(50, 250), random.randint(50, 250), random.randint(50, 250)))
+    LightGrayColorScheme().apply_to_graph(g1)
+    DarkGrayColorScheme().apply_to_graph(g2)
+    ColorScheme().apply_to_graph(g3)
+    BlueRedColorScheme().apply_to_graph(g4)
 
     layout.Random(g1).ejecutar()
     layout.Random(g2).ejecutar()

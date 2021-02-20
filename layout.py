@@ -325,7 +325,7 @@ class Spring(Layout):
     def __init__(self, g):
         super().__init__(g)
         self.c1 = 1
-        self.c2 = 25
+        self.c2 = 50
         self.c3 = 1
         self.c4 = 10
         self.expandir = False

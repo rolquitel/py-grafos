@@ -25,6 +25,8 @@ class Grafo:
     ESTILO_FONDO = '_fondo'
     ESTILO_MOSTRAR_EXTENSION = '_mostrarExt'
     ESTILO_MOSTRAR_VIEWPORT = '_mostrarVP'
+    ESTILO_APLICADO = '_estiloAplicado?'
+    ESTILO_COL_LINEA = '_estiloColorLinea'
 
     def __init__(self):
         """
@@ -36,8 +38,10 @@ class Grafo:
         self.atrib = {
             Grafo.ATTR_ESTILO: {
                 Grafo.ESTILO_FONDO: (20, 20, 20),
+                Grafo.ESTILO_COL_LINEA: (224, 244, 244),
                 Grafo.ESTILO_MOSTRAR_EXTENSION: False,
                 Grafo.ESTILO_MOSTRAR_VIEWPORT: False,
+                Grafo.ESTILO_APLICADO: None,
             },
         }
         self.threading = False
