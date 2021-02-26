@@ -242,7 +242,7 @@ class BarnesHut(Layout):
         d = math.sqrt(qtree.limite.w * qtree.limite.h)
 
         if not r > 0:
-            return numpy.array([0, 0])
+            return numpy.array([1e-10, 1e-10])
 
         if d / r < self.theta or not qtree.esta_dividido:
             return (delta / r) * fr(self.k, r) * qtree.atrib[BarnesHut.ATTR_MASA]

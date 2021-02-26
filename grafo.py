@@ -21,6 +21,7 @@ class Grafo:
     Clase grafo
     """
     ATTR_ESTILO = '_estilo'
+    ATTR_ACOMODADO = '__acomodado__'
 
     ESTILO_FONDO = '_fondo'
     ESTILO_MOSTRAR_EXTENSION = '_mostrarExt'
@@ -43,6 +44,7 @@ class Grafo:
                 Grafo.ESTILO_MOSTRAR_VIEWPORT: False,
                 Grafo.ESTILO_APLICADO: None,
             },
+            Grafo.ATTR_ACOMODADO: False,
         }
         self.threading = False
 
@@ -181,6 +183,9 @@ class Grafo:
 
         print('Ok.', len(g.nodos), 'nodos,', len(g.aristas), 'aristas')
         return g
+
+    def getRandomEdge(self):
+        return random.choice(list(self.aristas.values()))
 
     def estilo(self, est, val):
         """

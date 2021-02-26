@@ -1,7 +1,10 @@
 import math
 import random
 
+import numpy
+
 from grafo import Grafo, NODE_NAME_PREFIX, X_ATTR, Y_ATTR
+from nodo import Nodo
 
 
 def dist(a, b):
@@ -142,9 +145,18 @@ def nombreArista(i, j):
 
 
 def grafoMalla(m, n=0, diagonales=False):
+    """
+    Genera un grafo de malla
+    :param m: número de filas
+    :param n: número de columnas
+    :param diagonales: generar aristas diagonales?
+    :return: None
+    """
+    # si no se pasa n, la malla es cuadrada de m*m
     if n == 0:
         n = m
 
+    # por lo menos debe de ser un cuadro
     m = max(2, m)
     n = max(2, n)
 
@@ -152,6 +164,7 @@ def grafoMalla(m, n=0, diagonales=False):
 
     for i in range(m):
         for j in range(n):
+            g.agregarNodo(nombreNodo(i * n + j)).atrib[Nodo.ATTR_POS] = numpy.array([float(i), float(j)])
             if j < n - 1:
                 g.agregarArista(nombreArista(i * n + j, i * n + j + 1),
                                 nombreNodo(i * n + j),
@@ -168,5 +181,24 @@ def grafoMalla(m, n=0, diagonales=False):
                 g.agregarArista(nombreArista(i * n + j, (i - 1) * n + j + 1),
                                 nombreNodo(i * n + j),
                                 nombreNodo((i - 1) * n + j + 1))
+
+    g.atrib[Grafo.ATTR_ACOMODADO] = True
+    return g
+
+
+def grafoDM(n):
+    g = Grafo()
+
+    g.agregarArista(nombreArista(0, 1), 0, 1)
+    g.agregarArista(nombreArista(1, 2), 1, 2)
+    g.agregarArista(nombreArista(2, 0), 2, 0)
+
+    if n < 3:
+        n = 3
+
+    for i in range(3, n):
+        a = g.getRandomEdge()
+        g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id)
+        g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id)
 
     return g

@@ -52,7 +52,8 @@ if __name__ == '__main__':
     # g = Grafo.abrir('grafos/geo.200.15.gv')
     # g = Grafo.abrir('grafos/barabasi.500.8.gv')
 
-    g1 = algoritmos.grafoMalla( 5,  5, diagonales=False)
+    # g1 = algoritmos.grafoMalla( 5,  5, diagonales=False)
+    g1 = algoritmos.grafoDM(100)
     g2 = algoritmos.grafoMalla(10, 10, diagonales=False)
     g3 = algoritmos.grafoMalla(15, 15, diagonales=False)
     g4 = algoritmos.grafoMalla(20, 10, diagonales=False)
@@ -62,10 +63,14 @@ if __name__ == '__main__':
     ColorScheme().apply_to_graph(g3)
     BlueRedColorScheme().apply_to_graph(g4)
 
-    layout.Random(g1).ejecutar()
-    layout.Random(g2).ejecutar()
-    layout.Random(g3).ejecutar()
-    layout.Random(g4).ejecutar()
+    if not g1.atrib[Grafo.ATTR_ACOMODADO]:
+        layout.Random(g1).ejecutar()
+    if not g2.atrib[Grafo.ATTR_ACOMODADO]:
+        layout.Random(g2).ejecutar()
+    if not g3.atrib[Grafo.ATTR_ACOMODADO]:
+        layout.Random(g3).ejecutar()
+    if not g4.atrib[Grafo.ATTR_ACOMODADO]:
+        layout.Random(g4).ejecutar()
 
     vp1 = MyView(g1)
     vp1.set_rect([0, 0], [600, 500])
