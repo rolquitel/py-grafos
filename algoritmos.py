@@ -186,7 +186,7 @@ def grafoMalla(m, n=0, diagonales=False):
     return g
 
 
-def grafoDM(n):
+def grafoDorogovtsevMendes(n):
     g = Grafo()
 
     g.agregarArista(nombreArista(0, 1), 0, 1)
@@ -200,5 +200,29 @@ def grafoDM(n):
         a = g.getRandomEdge()
         g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id)
         g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id)
+
+    return g
+
+
+def grafoDorogovtsevMendesV2(n, divisor=10, p_inicial=1.0):
+    g = Grafo()
+
+    divisor = max(1.0, divisor)
+
+    g.agregarArista(nombreArista(0, 1), 0, 1).atrib['__DM'] = p_inicial
+    g.agregarArista(nombreArista(1, 2), 1, 2).atrib['__DM'] = p_inicial
+    g.agregarArista(nombreArista(2, 0), 2, 0).atrib['__DM'] = p_inicial
+
+    if n < 3:
+        n = 3
+
+    for i in range(3, n):
+        a = g.getRandomEdge()
+        while not random.random() <= a.atrib['__DM']:
+            a = g.getRandomEdge()
+
+        g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id).atrib['__DM'] = p_inicial
+        g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id).atrib['__DM'] = p_inicial
+        a.atrib['__DM'] = a.atrib['__DM'] / divisor
 
     return g
