@@ -226,3 +226,135 @@ def grafoDorogovtsevMendesV2(n, divisor=10, p_inicial=1.0):
         a.atrib['__DM'] = a.atrib['__DM'] / divisor
 
     return g
+
+
+"""
+static String rampColor(int layer) {
+        String colors[] = { 
+            "FA0000", 
+            "FA2A00", 
+            "FB5500", 
+            "FC7F00", 
+            "FDAA00", 
+            "FED400", 
+            "FFFF00",
+            "D4FF00", 
+            "AAFF00", 
+            "7FFF00", 
+            "55FF00", 
+            "2AFF00", 
+            "00FF00"
+        };
+        
+        return "#"+ colors[layer % colors.length] + ";";
+    }
+"""
+def rampColor(layer):
+    ramp = [
+        (0xFA, 0, 0),
+        (0xFA, 0x2A, 0),
+        (0xFB, 0x55, 0),
+        (0xFC, 0x7F, 0),
+        (0xFD, 0xAA, 0),
+        (0xFE, 0xD4, 0),
+        (0xFF, 0xFF, 0),
+        (0xD4, 0xFF, 0),
+        (0xAA, 0xFF, 0),
+        (0x7F, 0xFF, 0),
+        (0x55, 0xFF, 0),
+        (0x2A, 0xFF, 0),
+        (0x00, 0xFF, 0)
+    ]
+    return ramp[layer % len(ramp)]
+
+
+def BFS(bfs, g, s, sleep):
+    layers = []
+    added = {}
+
+    seed = g.obtNodo(s)
+    # seed.estilo(Nodo.ESTILO_COL_RELLENO, (250, 0, 0))
+
+    n = bfs.agregarNodo(seed.id)
+    # n.estilo(Nodo.ESTILO_COL_RELLENO, (205, 0, 0))
+    # n.estilo(Nodo.ESTILO_TAMANO, rampColor(0))
+
+    layers.append({seed.id: seed})
+    added[seed.id] = seed
+    for e in g.aristas.values():
+        e.atrib['bfs'] = False
+
+    i = 0
+    while i < len(layers):
+        nextLayer = {}
+        curLayer = layers[i]
+
+        for n in curLayer.values():
+            # fillColor = rampColor(i + 1)
+            edges = n.atrib[Nodo.ATTR_ARISTAS]
+            for e in edges:
+                if e.n0.id == n.id:
+                    m = e.n1
+                else:
+                    m = e.n0
+
+                if m.id not in nextLayer and m.id not in added:
+                    nn = bfs.agregarNodo(n.id)
+                    mm = bfs.agregarNodo(m.id)
+
+                    # if i == 0:
+                    #     nn.estilo(Nodo.ESTILO_TAMANO, 20)
+                    #     nn.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(0))
+
+                    bfs.agregarArista(str(n.id) + '->' + str(m.id), nn.id, mm.id)
+                    # mm.estilo(Nodo.ESTILO_COL_RELLENO, fillColor)
+                    # m.estilo(Nodo.ESTILO_COL_RELLENO, fillColor)
+                    # e.estilo(Arista.ESTILO_TAMANO, 2)
+                    e.atrib['bfs'] = True
+                    nextLayer[m.id] = m
+                    added[m.id] = m
+
+        i += 1
+        if len(nextLayer) != 0:
+            layers.append(nextLayer)
+"""
+public static void BFS(Graph bfs_tree, Graph g, int s, int sleep) {        
+        for(int layer = 0; layer < L.size(); layer++) {
+            HashSet<Node> nextLayer = new HashSet<>();
+            HashSet<Node> curLayer = L.get(layer);
+            final int ly = layer;
+            for( Node n:curLayer ) { 
+                String fillColor = "fill-color:"+ rampColor(layer+1);
+                n.edges().forEach(e -> {
+                    Node m = e.getNode0() == n ? e.getNode1() : e.getNode0();
+                    if( !nextLayer.contains(m) && !added.contains(m) ) {
+                        Node nn = bfs_tree.addNode(n.getId());
+                        Node nm = bfs_tree.addNode(m.getId());
+                        
+                        if( ly == 0 ) {
+                            nn.setAttribute("ui.style", "stroke-width:20;");
+                            nn.setAttribute("ui.style", "size:20;");
+                            nn.setAttribute("ui.style", "fill-color:"+ rampColor(0));
+                        }
+                        
+                        bfs_tree.addEdge(n.getId() +"->"+ m.getId(), nn, nm);
+                        nm.setAttribute("ui.style", fillColor);
+
+                        m.setAttribute("ui.style", fillColor);
+                        e.setAttribute("ui.style", "fill-color:black;");
+                        e.setAttribute("ui.style", "size:2;");
+                        e.setAttribute("ui.style", "z-index:2;");
+                        e.setAttribute("bfs", true);
+                        
+                        nextLayer.add(m);
+                        added.add(m);
+                        try { Thread.sleep(sleep); } catch(Exception ex) {}
+                    } 
+                });
+            }
+            if(!nextLayer.isEmpty()) {
+                L.add(nextLayer);
+            }
+        }
+    }
+"""

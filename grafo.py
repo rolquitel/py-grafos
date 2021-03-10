@@ -140,6 +140,10 @@ class Grafo:
         Calcula el rectangulo que delimita la zona del grafo
         :return:
         """
+        if len(self.nodos) < 2:
+            self.extent = numpy.array([numpy.array([-1.0, -1.0]), numpy.array([1.0, 1.0])])
+            return self.extent
+
         I = numpy.array([math.inf, math.inf])
         F = numpy.array([-math.inf, -math.inf])
         for v in self.nodos.values():
@@ -202,6 +206,10 @@ class Grafo:
         :param viewport:
         :return:
         """
+        if not self.atrib[Grafo.ATTR_ACOMODADO]:
+            layout.Random(self).ejecutar()
+            self.atrib[Grafo.ATTR_ACOMODADO] = True
+
         self.calcular_extension()
         self.transformacion = Transformacion(self.extent, viewport.rect)
 
