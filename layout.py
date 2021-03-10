@@ -173,7 +173,7 @@ class BarnesHut(Layout):
     def __init__(self, g):
         super().__init__(g)
         self.qtree = None
-        self.puntos_por_region = 6
+        self.puntos_por_region = 1
         self.theta = 1
         self.k = 50  # math.sqrt((self.res[0] * self.res[1]) / len(self.grafo.nodos))
         self.t = 0.95
@@ -236,18 +236,26 @@ class BarnesHut(Layout):
                                                       qtree.atrib[BarnesHut.ATTR_MASA]
 
     def calcular_fuerza_de_repulsion(self, p, qtree):
-        delta = p.atrib[Nodo.ATTR_POS] - qtree.atrib[BarnesHut.ATTR_CENTRO_MASA]
+        fuerza = numpy.array([0.0, 0.0])
 
-        r = numpy.linalg.norm(delta)
+        vec = p.datos.atrib[Nodo.ATTR_POS] - qtree.atrib[BarnesHut.ATTR_CENTRO_MASA]
+        r = numpy.linalg.norm(vec)
         d = math.sqrt(qtree.limite.w * qtree.limite.h)
 
         if not r > 0:
             return numpy.array([1e-10, 1e-10])
 
         if d / r < self.theta or not qtree.esta_dividido:
-            return (delta / r) * fr(self.k, r) * qtree.atrib[BarnesHut.ATTR_MASA]
+            for q in qtree.puntos:
+                vec = p.datos.atrib[Nodo.ATTR_POS] - q.datos.atrib[Nodo.ATTR_POS]
+                mag = numpy.linalg.norm(vec)
+                if not mag > 0:
+                    continue
+                fuerza = fuerza + (vec / mag) * fr(self.k, mag)
+            fuerza = fuerza + (vec / r) * fr(self.k, r) * qtree.atrib[BarnesHut.ATTR_MASA]
+            return fuerza
         else:
-            fuerza = self.calcular_fuerza_de_repulsion(p, qtree.I)
+            fuerza = fuerza + self.calcular_fuerza_de_repulsion(p, qtree.I)
             fuerza = fuerza + self.calcular_fuerza_de_repulsion(p, qtree.II)
             fuerza = fuerza + self.calcular_fuerza_de_repulsion(p, qtree.III)
             fuerza = fuerza + self.calcular_fuerza_de_repulsion(p, qtree.IV)
@@ -271,7 +279,8 @@ class BarnesHut(Layout):
 
         # fuerza de repulsion
         for v in self.grafo.nodos.values():
-            v.atrib[Nodo.ATTR_DESP] = self.calcular_fuerza_de_repulsion(v, self.qtree)
+            p = Punto(v.atrib[Nodo.ATTR_POS][0], v.atrib[Nodo.ATTR_POS][1], v)
+            v.atrib[Nodo.ATTR_DESP] = self.calcular_fuerza_de_repulsion(p, self.qtree)
 
         # fuerza de atracción
         for e in self.grafo.aristas.values():
