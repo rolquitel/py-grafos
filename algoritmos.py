@@ -186,6 +186,13 @@ def grafoMalla(m, n=0, diagonales=False):
     return g
 
 
+def eventoDorogovtsevMendes(g):
+    i = len(g.nodos)
+    a = g.getRandomEdge()
+    g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id)
+    g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id)
+
+
 def grafoDorogovtsevMendes(n):
     g = Grafo()
 
@@ -197,9 +204,10 @@ def grafoDorogovtsevMendes(n):
         n = 3
 
     for i in range(3, n):
-        a = g.getRandomEdge()
-        g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id)
-        g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id)
+        # a = g.getRandomEdge()
+        # g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id)
+        # g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id)
+        eventoDorogovtsevMendes(g)
 
     return g
 
@@ -268,11 +276,14 @@ def rampColor(layer):
     return ramp[layer % len(ramp)]
 
 
-def BFS(bfs, g, s, sleep):
+def BFS(bfs, g, s=None, sleep=0):
     layers = []
     added = {}
 
-    seed = g.obtNodo(s)
+    if s is None:
+        seed = random.choice(list(g.nodos.values()))
+    else:
+        seed = g.obtNodo(s)
     # seed.estilo(Nodo.ESTILO_COL_RELLENO, (250, 0, 0))
 
     n = bfs.agregarNodo(seed.id)

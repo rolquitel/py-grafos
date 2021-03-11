@@ -104,7 +104,7 @@ class Grafo:
         if n is None:
             return 0
 
-        return len(n.atributos[Nodo.ATTR_VECINOS])
+        return len(n.atrib[Nodo.ATTR_VECINOS])
 
     def __str__(self):
         """
@@ -140,9 +140,9 @@ class Grafo:
         Calcula el rectangulo que delimita la zona del grafo
         :return:
         """
-        if len(self.nodos) < 2:
-            self.extent = numpy.array([numpy.array([-1.0, -1.0]), numpy.array([1.0, 1.0])])
-            return self.extent
+        # if len(self.nodos) < 2:
+        #     self.extent = numpy.array([numpy.array([-1.0, -1.0]), numpy.array([1.0, 1.0])])
+        #     return self.extent
 
         I = numpy.array([math.inf, math.inf])
         F = numpy.array([-math.inf, -math.inf])
@@ -152,7 +152,11 @@ class Grafo:
             F[0] = max(F[0], v.atrib[Nodo.ATTR_POS][0])
             F[1] = max(F[1], v.atrib[Nodo.ATTR_POS][1])
 
-        self.extent = numpy.array([I, F])
+        if F[0] <= I[0] or F[1] <= I[0]:
+            self.extent = numpy.array([numpy.array([-1.0, -1.0]), numpy.array([1.0, 1.0])])
+        else:
+            self.extent = numpy.array([I, F])
+
         return self.extent
 
     def guardar(self, archivo):
@@ -206,9 +210,9 @@ class Grafo:
         :param viewport:
         :return:
         """
-        if not self.atrib[Grafo.ATTR_ACOMODADO]:
-            layout.Random(self).ejecutar()
-            self.atrib[Grafo.ATTR_ACOMODADO] = True
+        # if not self.atrib[Grafo.ATTR_ACOMODADO]:
+        #     layout.Random(self).ejecutar()
+        #     self.atrib[Grafo.ATTR_ACOMODADO] = True
 
         self.calcular_extension()
         self.transformacion = Transformacion(self.extent, viewport.rect)

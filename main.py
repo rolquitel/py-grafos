@@ -42,25 +42,27 @@ class MyView(Viewport):
         elif pressed[pygame.K_g]:
             if not self.layinout:
                 layout.Grid(self.grafo).ejecutar()
+        elif pressed[pygame.K_d]:
+            algoritmos.eventoDorogovtsevMendes(self.grafo)
 
 
 if __name__ == '__main__':
     # g = algoritmos.randomErdos(300, 5000)
-    # g = algoritmos.randomBarabasi(1000, 20)
-    # g = algoritmos.randomGeo(700, 0.10)
+    # g = algoritmos.randomBarabasi(250, 20)
+    # g = algoritmos.randomGeo(300, 0.10)
     # g.guardar('grafos/geo.700.10.gv')
     # g1 = Grafo.abrir('grafos/geo.200.15.gv')
-    # g = Grafo.abrir('grafos/barabasi.500.8.gv')
+    g = Grafo.abrir('grafos/barabasi.500.8.gv')
 
     # g1 = algoritmos.grafoMalla( 5,  5, diagonales=False)
-    g1 = algoritmos.grafoDorogovtsevMendesV2(150, 1, p_inicial=0.5)
+    # g = algoritmos.grafoDorogovtsevMendesV2(150)
 
     bfs = Grafo()
 
-    algoritmos.BFS(bfs, g1, 1, 0)
+    algoritmos.BFS(bfs, g)
     ColorScheme().apply_to_graph(bfs)
 
-    vp1 = MyView(g1)
+    vp1 = MyView(g)
     vp1.set_rect([0, 0], [600, 1000])
 
     vp2 = MyView(bfs)

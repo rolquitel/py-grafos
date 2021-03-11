@@ -1,3 +1,6 @@
+import random
+
+import numpy
 import pygame
 
 
@@ -37,6 +40,7 @@ class Nodo:
         self.atrib = {
             Nodo.ATTR_ARISTAS: [],
             Nodo.ATTR_VECINOS: [],
+            Nodo.ATTR_POS: numpy.array([random.random(), random.random()]),
             Nodo.ATTR_ESTILO: {
                 Nodo.ESTILO_FORMA: Nodo.FORMA_CIRCULAR,
                 Nodo.ESTILO_TAMANO: 10,

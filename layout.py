@@ -96,8 +96,8 @@ class FruchtermanReingold(Layout):
         super().__init__(g)
         self.k = 50  # math.sqrt((self.res[0] * self.res[1]) / len(self.grafo.nodos))
         self.t = 0.95
-        self.avance = 20
-        self.umbral_convergencia = 1e-3
+        self.avance = 25
+        self.umbral_convergencia = min(3.0, len(g.nodos) / 100)
         self.convergio = False
         self.energia = math.inf
         self.progreso = 0
@@ -173,7 +173,7 @@ class BarnesHut(Layout):
     def __init__(self, g):
         super().__init__(g)
         self.qtree = None
-        self.puntos_por_region = 1
+        self.puntos_por_region = 4
         self.theta = 1
         self.k = 50  # math.sqrt((self.res[0] * self.res[1]) / len(self.grafo.nodos))
         self.t = 0.95
@@ -240,18 +240,13 @@ class BarnesHut(Layout):
 
         vec = p.datos.atrib[Nodo.ATTR_POS] - qtree.atrib[BarnesHut.ATTR_CENTRO_MASA]
         r = numpy.linalg.norm(vec)
-        d = math.sqrt(qtree.limite.w * qtree.limite.h)
+        # d = math.sqrt(qtree.limite.w * qtree.limite.h)
+        d = min(qtree.limite.w, qtree.limite.h)
 
         if not r > 0:
-            return numpy.array([1e-10, 1e-10])
+            return numpy.array([0.0, 0.0])
 
         if d / r < self.theta or not qtree.esta_dividido:
-            for q in qtree.puntos:
-                vec = p.datos.atrib[Nodo.ATTR_POS] - q.datos.atrib[Nodo.ATTR_POS]
-                mag = numpy.linalg.norm(vec)
-                if not mag > 0:
-                    continue
-                fuerza = fuerza + (vec / mag) * fr(self.k, mag)
             fuerza = fuerza + (vec / r) * fr(self.k, r) * qtree.atrib[BarnesHut.ATTR_MASA]
             return fuerza
         else:
