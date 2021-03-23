@@ -1,3 +1,4 @@
+from arista import Arista
 import math
 import random
 
@@ -236,27 +237,6 @@ def grafoDorogovtsevMendesV2(n, divisor=10, p_inicial=1.0):
     return g
 
 
-"""
-static String rampColor(int layer) {
-        String colors[] = { 
-            "FA0000", 
-            "FA2A00", 
-            "FB5500", 
-            "FC7F00", 
-            "FDAA00", 
-            "FED400", 
-            "FFFF00",
-            "D4FF00", 
-            "AAFF00", 
-            "7FFF00", 
-            "55FF00", 
-            "2AFF00", 
-            "00FF00"
-        };
-        
-        return "#"+ colors[layer % colors.length] + ";";
-    }
-"""
 def rampColor(layer):
     ramp = [
         (0xFA, 0, 0),
@@ -284,11 +264,11 @@ def BFS(bfs, g, s=None, sleep=0):
         seed = random.choice(list(g.nodos.values()))
     else:
         seed = g.obtNodo(s)
-    # seed.estilo(Nodo.ESTILO_COL_RELLENO, (250, 0, 0))
+    seed.estilo(Nodo.ESTILO_COL_RELLENO, (250, 0, 0))
 
     n = bfs.agregarNodo(seed.id)
-    # n.estilo(Nodo.ESTILO_COL_RELLENO, (205, 0, 0))
-    # n.estilo(Nodo.ESTILO_TAMANO, rampColor(0))
+    n.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(0))
+    n.estilo(Nodo.ESTILO_TAMANO, 20)
 
     layers.append({seed.id: seed})
     added[seed.id] = seed
@@ -313,14 +293,17 @@ def BFS(bfs, g, s=None, sleep=0):
                     nn = bfs.agregarNodo(n.id)
                     mm = bfs.agregarNodo(m.id)
 
-                    # if i == 0:
-                    #     nn.estilo(Nodo.ESTILO_TAMANO, 20)
-                    #     nn.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(0))
+                    if i == 0:
+                        nn.estilo(Nodo.ESTILO_TAMANO, 20)
+                        nn.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(0))
 
                     bfs.agregarArista(str(n.id) + '->' + str(m.id), nn.id, mm.id)
-                    # mm.estilo(Nodo.ESTILO_COL_RELLENO, fillColor)
-                    # m.estilo(Nodo.ESTILO_COL_RELLENO, fillColor)
-                    # e.estilo(Arista.ESTILO_TAMANO, 2)
+                    mm.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(i))
+                    m.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(i))
+
+                    e.estilo(Arista.ESTILO_GROSOR, 2)
+                    e.estilo(Arista.ESTILO_COLOR, WHITE) 
+
                     e.atrib['bfs'] = True
                     nextLayer[m.id] = m
                     added[m.id] = m
@@ -328,44 +311,48 @@ def BFS(bfs, g, s=None, sleep=0):
         i += 1
         if len(nextLayer) != 0:
             layers.append(nextLayer)
-"""
-public static void BFS(Graph bfs_tree, Graph g, int s, int sleep) {        
-        for(int layer = 0; layer < L.size(); layer++) {
-            HashSet<Node> nextLayer = new HashSet<>();
-            HashSet<Node> curLayer = L.get(layer);
-            final int ly = layer;
-            for( Node n:curLayer ) { 
-                String fillColor = "fill-color:"+ rampColor(layer+1);
-                n.edges().forEach(e -> {
-                    Node m = e.getNode0() == n ? e.getNode1() : e.getNode0();
-                    if( !nextLayer.contains(m) && !added.contains(m) ) {
-                        Node nn = bfs_tree.addNode(n.getId());
-                        Node nm = bfs_tree.addNode(m.getId());
-                        
-                        if( ly == 0 ) {
-                            nn.setAttribute("ui.style", "stroke-width:20;");
-                            nn.setAttribute("ui.style", "size:20;");
-                            nn.setAttribute("ui.style", "fill-color:"+ rampColor(0));
-                        }
-                        
-                        bfs_tree.addEdge(n.getId() +"->"+ m.getId(), nn, nm);
-                        nm.setAttribute("ui.style", fillColor);
 
-                        m.setAttribute("ui.style", fillColor);
-                        e.setAttribute("ui.style", "fill-color:black;");
-                        e.setAttribute("ui.style", "size:2;");
-                        e.setAttribute("ui.style", "z-index:2;");
-                        e.setAttribute("bfs", true);
-                        
-                        nextLayer.add(m);
-                        added.add(m);
-                        try { Thread.sleep(sleep); } catch(Exception ex) {}
-                    } 
-                });
-            }
-            if(!nextLayer.isEmpty()) {
-                L.add(nextLayer);
-            }
-        }
-    }
-"""
+def DFS(dfs, g, s=None, sleep=0):
+    added = {}
+
+    if s is None:
+        seed = random.choice(list(g.nodos.values()))
+    else:
+        seed = g.obtNodo(s)
+
+    DFS_R(seed, dfs, added, sleep, 0)
+
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
+def DFS_R(seed, dfs, added, sleep, layer):
+    added[seed.id] = seed
+
+    edges = seed.atrib[Nodo.ATTR_ARISTAS]
+    for e in edges:
+        if e.n0.id == seed.id:
+            m = e.n1
+        else:
+            m = e.n0
+
+        if not m.id in added:
+            nn = dfs.agregarNodo(seed.id)
+            mm = dfs.agregarNodo(m.id)
+
+            if layer == 0:
+                nn.estilo(Nodo.ESTILO_TAMANO, 20)
+                nn.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(layer) )
+                nn.estilo(Nodo.ESTILO_COL_BORDE, rampColor(layer) )
+
+            mm.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(layer + 1) )
+            m.estilo(Nodo.ESTILO_COL_RELLENO, rampColor(layer + 1) )
+
+            dfs.agregarArista(str(nn.id) + '->' + str(mm.id), nn.id, mm.id)   
+
+            e.estilo(Arista.ESTILO_GROSOR, 3)
+            e.estilo(Arista.ESTILO_COLOR, RED)
+
+            DFS_R(m, dfs, added, sleep, layer + 1)  
+
+            e.estilo(Arista.ESTILO_GROSOR, 2)
+            e.estilo(Arista.ESTILO_COLOR, WHITE)       

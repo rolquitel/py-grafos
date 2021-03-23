@@ -303,7 +303,7 @@ class BarnesHut(Layout):
         """
         # print(self.pasos, math.sqrt(self.energia) / (len(self.grafo.nodos) * 10), self.avance)
         if math.sqrt(self.energia) / (len(self.grafo.nodos) * 10) < self.umbral_convergencia or self.avance < 1:
-            print('Convergió.')
+            print('Convergio.')
             self.convergio = True
 
         # self.avance = min(math.sqrt(self.energia) / (len(self.grafo.nodos) * 10), 2 * self.avance)

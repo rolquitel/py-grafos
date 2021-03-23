@@ -52,28 +52,47 @@ if __name__ == '__main__':
     # g = algoritmos.randomGeo(300, 0.10)
     # g.guardar('grafos/geo.700.10.gv')
     # g1 = Grafo.abrir('grafos/geo.200.15.gv')
-    g = Grafo.abrir('grafos/barabasi.500.8.gv')
+    # g1 = Grafo.abrir('grafos/barabasi.200.8.gv')
 
     # g1 = algoritmos.grafoMalla( 5,  5, diagonales=False)
-    # g = algoritmos.grafoDorogovtsevMendesV2(150)
+    g1 = algoritmos.grafoDorogovtsevMendesV2(150)
 
+    g2 = g1.clonar()
     bfs = Grafo()
+    dfs = Grafo()
 
-    algoritmos.BFS(bfs, g)
-    ColorScheme().apply_to_graph(bfs)
+    # layout.Random(g2).ejecutar()
 
-    vp1 = MyView(g)
-    vp1.set_rect([0, 0], [600, 1000])
+    # ColorScheme().apply_to_graph(g1)
+    # ColorScheme().apply_to_graph(g2)
+    # ColorScheme().apply_to_graph(bfs)
+    # ColorScheme().apply_to_graph(dfs)
+
+    algoritmos.BFS(bfs, g1)
+    algoritmos.DFS(dfs, g2)
+
+    vp1 = MyView(g1)
+    vp1.set_rect([0, 0], [600, 500])
 
     vp2 = MyView(bfs)
-    vp2.set_rect([600, 0], [600, 1000])
+    vp2.set_rect([600, 0], [600, 500])
+
+    vp3 = MyView(g2)
+    vp3.set_rect([0, 500], [600, 500])
+
+    vp4 = MyView(dfs)
+    vp4.set_rect([600, 500], [600, 500])
 
     win = Frame()
 
     win.add_viewport(vp1)
     win.add_viewport(vp2)
+    win.add_viewport(vp3)
+    win.add_viewport(vp4)
 
     win.add_key_listerer(vp1)
     win.add_key_listerer(vp2)
+    win.add_key_listerer(vp3)
+    win.add_key_listerer(vp4)
 
     win.show([1200, 1000])

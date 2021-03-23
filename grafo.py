@@ -48,6 +48,25 @@ class Grafo:
         }
         self.threading = False
 
+    def clonar(self):
+        ret = Grafo()
+
+        ret.id = self.id + "_clon"
+        for n in self.nodos.values():
+            nn = ret.agregarNodo(n.id)
+            nn.atrib = n.atrib.copy()
+            nn.atrib[Nodo.ATTR_VECINOS] = []
+            nn.atrib[Nodo.ATTR_ARISTAS] = []
+
+        for m in self.aristas.values():
+            e = ret.agregarArista(m.id, m.n0.id, m.n1.id)
+            # e.atrib = m.atrib.copy()
+
+        ret.atrib.clear()
+        ret.atrib = self.atrib.copy()
+
+        return ret
+
     def agregarNodo(self, name):
         """
         Agregar nodo al grafo, primero verifica si el nodo ya existe, de lo contrario lo crea y lo agrega al diccionario
