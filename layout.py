@@ -3,7 +3,9 @@ import math
 import random
 import numpy
 from abc import ABC
-from nodo import Nodo
+
+import nodo
+import grafo
 from quadtree import QuadTree, Rectangulo, Punto
 
 parar_layout = False
@@ -64,7 +66,7 @@ class Layout(ABC):
 class Random(Layout):
     def paso(self):
         for v in self.grafo.nodos.values():
-            v.atrib[Nodo.ATTR_POS] = numpy.array([random.random(), random.random()])
+            v.atrib[nodo.ATTR_POS] = numpy.array([random.random(), random.random()])
 
         return True
 
@@ -80,7 +82,7 @@ class Grid(Layout):
         for v in self.grafo.nodos.values():
             x = tam[0] * int((n % lado) + 1) - origen[0]
             y = tam[1] * int((n / lado) + 1) - origen[1]
-            v.atrib[Nodo.ATTR_POS] = numpy.array([x, y])
+            v.atrib[nodo.ATTR_POS] = numpy.array([x, y])
             n = n + 1
         return True
 
@@ -114,27 +116,29 @@ class FruchtermanReingold(Layout):
         energia_anterior = self.energia
         self.energia = 0
 
-        # fuerza de repulsion
-        for v in self.grafo.nodos.values():
-            v.atrib[Nodo.ATTR_DESP] = numpy.array([0, 0])
-            for u in self.grafo.nodos.values():
-                if v != u:
-                    delta = v.atrib[Nodo.ATTR_POS] - u.atrib[Nodo.ATTR_POS]
-                    v.atrib[Nodo.ATTR_DESP] = v.atrib[Nodo.ATTR_DESP] + (delta / mag(delta)) * fr(self.k, mag(delta))
+       
+        with grafo.WRITING_LOCK:
+             # fuerza de repulsion
+            for v in self.grafo.nodos.values():
+                v.atrib[nodo.ATTR_DESP] = numpy.array([0, 0])
+                for u in self.grafo.nodos.values():
+                    if v != u:
+                        delta = v.atrib[nodo.ATTR_POS] - u.atrib[nodo.ATTR_POS]
+                        v.atrib[nodo.ATTR_DESP] = v.atrib[nodo.ATTR_DESP] + (delta / mag(delta)) * fr(self.k, mag(delta))
 
-        # fuerza de atracción
-        for e in self.grafo.aristas.values():
-            delta = e.n0.atrib[Nodo.ATTR_POS] - e.n1.atrib[Nodo.ATTR_POS]
-            e.n0.atrib[Nodo.ATTR_DESP] = e.n0.atrib[Nodo.ATTR_DESP] - (delta / mag(delta)) * fa(self.k, mag(delta))
-            e.n1.atrib[Nodo.ATTR_DESP] = e.n1.atrib[Nodo.ATTR_DESP] + (delta / mag(delta)) * fa(self.k, mag(delta))
+            # fuerza de atracción
+            for e in self.grafo.aristas.values():
+                delta = e.n0.atrib[nodo.ATTR_POS] - e.n1.atrib[nodo.ATTR_POS]
+                e.n0.atrib[nodo.ATTR_DESP] = e.n0.atrib[nodo.ATTR_DESP] - (delta / mag(delta)) * fa(self.k, mag(delta))
+                e.n1.atrib[nodo.ATTR_DESP] = e.n1.atrib[nodo.ATTR_DESP] + (delta / mag(delta)) * fa(self.k, mag(delta))
 
-        # mover los nodos de acuerdo a la fuerza resultante
-        dif = numpy.array([0, 0])
-        for v in self.grafo.nodos.values():
-            dif = dif + (v.atrib[Nodo.ATTR_DESP] / mag(v.atrib[Nodo.ATTR_DESP])) * self.avance
-            v.atrib[Nodo.ATTR_POS] = v.atrib[Nodo.ATTR_POS] + (
-                    v.atrib[Nodo.ATTR_DESP] / mag(v.atrib[Nodo.ATTR_DESP])) * self.avance
-            self.energia = self.energia + mag(v.atrib[Nodo.ATTR_DESP]) ** 2
+            # mover los nodos de acuerdo a la fuerza resultante
+            dif = numpy.array([0, 0])
+            for v in self.grafo.nodos.values():
+                dif = dif + (v.atrib[nodo.ATTR_DESP] / mag(v.atrib[nodo.ATTR_DESP])) * self.avance
+                v.atrib[nodo.ATTR_POS] = v.atrib[nodo.ATTR_POS] + (
+                        v.atrib[nodo.ATTR_DESP] / mag(v.atrib[nodo.ATTR_DESP])) * self.avance
+                self.energia = self.energia + mag(v.atrib[nodo.ATTR_DESP]) ** 2
 
         self.actualizar_paso(energia_anterior)
 
@@ -190,7 +194,7 @@ class BarnesHut(Layout):
         self.qtree = QuadTree(Rectangulo(self.grafo.extent[0][0], self.grafo.extent[0][1], self.grafo.extent[1][0],
                                          self.grafo.extent[1][1]), self.puntos_por_region)
         for v in self.grafo.nodos.values():
-            p = Punto(v.atrib[Nodo.ATTR_POS][0], v.atrib[Nodo.ATTR_POS][1], v)
+            p = Punto(v.atrib[nodo.ATTR_POS][0], v.atrib[nodo.ATTR_POS][1], v)
             self.qtree.insertar(p)
 
     def calcular_masas(self, qtree):
@@ -238,7 +242,7 @@ class BarnesHut(Layout):
     def calcular_fuerza_de_repulsion(self, p, qtree):
         fuerza = numpy.array([0.0, 0.0])
 
-        vec = p.datos.atrib[Nodo.ATTR_POS] - qtree.atrib[BarnesHut.ATTR_CENTRO_MASA]
+        vec = p.datos.atrib[nodo.ATTR_POS] - qtree.atrib[BarnesHut.ATTR_CENTRO_MASA]
         r = numpy.linalg.norm(vec)
         # d = math.sqrt(qtree.limite.w * qtree.limite.h)
         d = min(qtree.limite.w, qtree.limite.h)
@@ -261,8 +265,8 @@ class BarnesHut(Layout):
         Ejecuta un paso del algoritmo de disposición
         :return: True si el algoritmo ha convergido, False de otra forma
         """
-        if self.convergio:
-            return
+        # if self.convergio:
+        #     return
 
         self.pasos += 1
         self.construye_quadtree()
@@ -272,26 +276,28 @@ class BarnesHut(Layout):
         energia_anterior = self.energia
         self.energia = 0
 
-        # fuerza de repulsion
-        for v in self.grafo.nodos.values():
-            p = Punto(v.atrib[Nodo.ATTR_POS][0], v.atrib[Nodo.ATTR_POS][1], v)
-            v.atrib[Nodo.ATTR_DESP] = self.calcular_fuerza_de_repulsion(p, self.qtree)
+        with grafo.WRITING_LOCK:
+            # fuerza de repulsion
+            for v in self.grafo.nodos.values():
+                p = Punto(v.atrib[nodo.ATTR_POS][0], v.atrib[nodo.ATTR_POS][1], v)
+                v.atrib[nodo.ATTR_DESP] = self.calcular_fuerza_de_repulsion(p, self.qtree)
 
-        # fuerza de atracción
-        for e in self.grafo.aristas.values():
-            delta = e.n0.atrib[Nodo.ATTR_POS] - e.n1.atrib[Nodo.ATTR_POS]
-            m = mag(delta)
-            if m > 0:
-                e.n0.atrib[Nodo.ATTR_DESP] -= (delta / m) * fa(self.k, m)
-                e.n1.atrib[Nodo.ATTR_DESP] += (delta / m) * fa(self.k, m)
+            # fuerza de atracción
+            for e in self.grafo.aristas.values():
+                delta = e.n0.atrib[nodo.ATTR_POS] - e.n1.atrib[nodo.ATTR_POS]
+                m = mag(delta)
+                if m > 0:
+                    e.n0.atrib[nodo.ATTR_DESP] -= (delta / m) * fa(self.k, m)
+                    e.n1.atrib[nodo.ATTR_DESP] += (delta / m) * fa(self.k, m)
 
-        # mover los nodos de acuerdo a la fuerza resultante
-        for v in self.grafo.nodos.values():
-            m = mag(v.atrib[Nodo.ATTR_DESP])
-            v.atrib[Nodo.ATTR_POS] = v.atrib[Nodo.ATTR_POS] + (v.atrib[Nodo.ATTR_DESP] / m) * self.avance
-            self.energia += m ** 2
+            # mover los nodos de acuerdo a la fuerza resultante
+            for v in self.grafo.nodos.values():
+                m = mag(v.atrib[nodo.ATTR_DESP])
+                v.atrib[nodo.ATTR_POS] = v.atrib[nodo.ATTR_POS] + (v.atrib[nodo.ATTR_DESP] / m) * self.avance
+                self.energia += m ** 2
 
-        self.actualizar_paso(energia_anterior)
+        if not self.convergio:
+            self.actualizar_paso(energia_anterior)
 
         return self.convergio
 
@@ -303,7 +309,7 @@ class BarnesHut(Layout):
         """
         # print(self.pasos, math.sqrt(self.energia) / (len(self.grafo.nodos) * 10), self.avance)
         if math.sqrt(self.energia) / (len(self.grafo.nodos) * 10) < self.umbral_convergencia or self.avance < 1:
-            print('Convergio.')
+            print('Layout converged.')
             self.convergio = True
 
         # self.avance = min(math.sqrt(self.energia) / (len(self.grafo.nodos) * 10), 2 * self.avance)
@@ -340,37 +346,38 @@ class Spring(Layout):
         Ejecuta un paso del algoritmo de disposición
         :return: True si el algoritmo ha convergido, False de otra forma
         """
-        for n in self.grafo.nodos.values():
-            n.atrib[Nodo.ATTR_DESP] = numpy.array([0, 0])
-
-        for e in self.grafo.aristas.values():
-            f = e.n0.atrib[Nodo.ATTR_POS] - e.n1.atrib[Nodo.ATTR_POS]
-            d = numpy.linalg.norm(f)
-            try:
-                f = (f / d) * math.log10(d / self.c2) * self.c4
-            except ValueError:
-                continue
-            e.n0.atrib[Nodo.ATTR_DESP] = e.n0.atrib[Nodo.ATTR_DESP] - f
-            e.n1.atrib[Nodo.ATTR_DESP] = e.n1.atrib[Nodo.ATTR_DESP] + f
-
-        disp = 0
-        for n in self.grafo.nodos.values():
-            disp = max(disp, numpy.linalg.norm(n.atrib[Nodo.ATTR_DESP]))
-            n.atrib[Nodo.ATTR_POS] = n.atrib[Nodo.ATTR_POS] + n.atrib[Nodo.ATTR_DESP]
-
-        # print(disp * len(self.grafo.nodos), self.atrib['k'])
-        if (disp * len(self.grafo.nodos)) < self.k and self.expandir:
-            self.expandir = False
-            for a in self.grafo.nodos.values():
-                a.atrib[Nodo.ATTR_DESP] = numpy.array([0, 0])
-                for b in self.grafo.nodos.values():
-                    if a != b:
-                        f = a.atrib[Nodo.ATTR_POS] - b.atrib[Nodo.ATTR_POS]
-                        d = numpy.linalg.norm(f)
-                        f = (f / d) * fr(self.k, d)
-                        a.atrib[Nodo.ATTR_DESP] = a.atrib[Nodo.ATTR_DESP] - self.c4 * f
-
+        with grafo.WRITING_LOCK:
             for n in self.grafo.nodos.values():
-                n.atrib[Nodo.ATTR_POS] = n.atrib[Nodo.ATTR_POS] + n.atrib[Nodo.ATTR_DESP] * (0.1 / self.c4)
+                n.atrib[nodo.ATTR_DESP] = numpy.array([0, 0])
+
+            for e in self.grafo.aristas.values():
+                f = e.n0.atrib[nodo.ATTR_POS] - e.n1.atrib[nodo.ATTR_POS]
+                d = numpy.linalg.norm(f)
+                try:
+                    f = (f / d) * math.log10(d / self.c2) * self.c4
+                except ValueError:
+                    continue
+                e.n0.atrib[nodo.ATTR_DESP] = e.n0.atrib[nodo.ATTR_DESP] - f
+                e.n1.atrib[nodo.ATTR_DESP] = e.n1.atrib[nodo.ATTR_DESP] + f
+
+            disp = 0
+            for n in self.grafo.nodos.values():
+                disp = max(disp, numpy.linalg.norm(n.atrib[nodo.ATTR_DESP]))
+                n.atrib[nodo.ATTR_POS] = n.atrib[nodo.ATTR_POS] + n.atrib[nodo.ATTR_DESP]
+
+            # print(disp * len(self.grafo.nodos), self.atrib['k'])
+            if (disp * len(self.grafo.nodos)) < self.k and self.expandir:
+                self.expandir = False
+                for a in self.grafo.nodos.values():
+                    a.atrib[nodo.ATTR_DESP] = numpy.array([0, 0])
+                    for b in self.grafo.nodos.values():
+                        if a != b:
+                            f = a.atrib[nodo.ATTR_POS] - b.atrib[nodo.ATTR_POS]
+                            d = numpy.linalg.norm(f)
+                            f = (f / d) * fr(self.k, d)
+                            a.atrib[nodo.ATTR_DESP] = a.atrib[nodo.ATTR_DESP] - self.c4 * f
+
+                for n in self.grafo.nodos.values():
+                    n.atrib[nodo.ATTR_POS] = n.atrib[nodo.ATTR_POS] + n.atrib[nodo.ATTR_DESP] * (0.1 / self.c4)
 
         return False

@@ -1,33 +1,32 @@
 import math
 import random
-import threading
 import numpy
-import pygame
-import pygame.freetype
+import threading
 
-import layout
+import nodo
 from arista import Arista
 from nodo import Nodo
 from util import dibujar_rect_punteado, Transformacion
-from ui import Viewport
 
-NODE_NAME_PREFIX = 'nodo_'
+NNAME_PREFIX = 'nodo_'
 X_ATTR = '__x__'
 Y_ATTR = '__y__'
 
+ATTR_ESTILO = '_estilo'
+ATTR_ACOMODADO = '__acomodado__'
+
+ESTILO_FONDO = '_fondo'
+ESTILO_MOSTRAR_EXTENSION = '_mostrarExt'
+ESTILO_MOSTRAR_VIEWPORT = '_mostrarVP'
+ESTILO_APLICADO = '_estiloAplicado?'
+ESTILO_COL_LINEA = '_estiloColorLinea'
+
+WRITING_LOCK = threading.Lock()
 
 class Grafo:
     """
     Clase grafo
     """
-    ATTR_ESTILO = '_estilo'
-    ATTR_ACOMODADO = '__acomodado__'
-
-    ESTILO_FONDO = '_fondo'
-    ESTILO_MOSTRAR_EXTENSION = '_mostrarExt'
-    ESTILO_MOSTRAR_VIEWPORT = '_mostrarVP'
-    ESTILO_APLICADO = '_estiloAplicado?'
-    ESTILO_COL_LINEA = '_estiloColorLinea'
 
     def __init__(self):
         """
@@ -37,14 +36,14 @@ class Grafo:
         self.nodos = {}
         self.aristas = {}
         self.atrib = {
-            Grafo.ATTR_ESTILO: {
-                Grafo.ESTILO_FONDO: (20, 20, 20),
-                Grafo.ESTILO_COL_LINEA: (224, 244, 244),
-                Grafo.ESTILO_MOSTRAR_EXTENSION: False,
-                Grafo.ESTILO_MOSTRAR_VIEWPORT: False,
-                Grafo.ESTILO_APLICADO: None,
+            ATTR_ESTILO: {
+                ESTILO_FONDO: (20, 20, 20),
+                ESTILO_COL_LINEA: (224, 244, 244),
+                ESTILO_MOSTRAR_EXTENSION: False,
+                ESTILO_MOSTRAR_VIEWPORT: False,
+                ESTILO_APLICADO: None,
             },
-            Grafo.ATTR_ACOMODADO: False,
+            ATTR_ACOMODADO: False,
         }
         self.threading = False
 
@@ -55,8 +54,8 @@ class Grafo:
         for n in self.nodos.values():
             nn = ret.agregarNodo(n.id)
             nn.atrib = n.atrib.copy()
-            nn.atrib[Nodo.ATTR_VECINOS] = []
-            nn.atrib[Nodo.ATTR_ARISTAS] = []
+            nn.atrib[nodo.ATTR_VECINOS] = []
+            nn.atrib[nodo.ATTR_ARISTAS] = []
 
         for m in self.aristas.values():
             e = ret.agregarArista(m.id, m.n0.id, m.n1.id)
@@ -77,7 +76,9 @@ class Grafo:
 
         if node is None:
             node = Nodo(name)
-            self.nodos[name] = node
+
+            with WRITING_LOCK:
+                self.nodos[name] = node
 
         return node
 
@@ -95,13 +96,15 @@ class Grafo:
             n0 = self.agregarNodo(node0)
             n1 = self.agregarNodo(node1)
             e = Arista(n0, n1, name)
-            self.aristas[name] = e
 
-            n0.atrib.get(Nodo.ATTR_VECINOS).append(n1)
-            n1.atrib.get(Nodo.ATTR_VECINOS).append(n0)
+            with WRITING_LOCK:
+                self.aristas[name] = e
 
-            n0.atrib.get(Nodo.ATTR_ARISTAS).append(e)
-            n1.atrib.get(Nodo.ATTR_ARISTAS).append(e)
+            n0.atrib.get(nodo.ATTR_VECINOS).append(n1)
+            n1.atrib.get(nodo.ATTR_VECINOS).append(n0)
+
+            n0.atrib.get(nodo.ATTR_ARISTAS).append(e)
+            n1.atrib.get(nodo.ATTR_ARISTAS).append(e)
 
         return e
 
@@ -123,7 +126,7 @@ class Grafo:
         if n is None:
             return 0
 
-        return len(n.atrib[Nodo.ATTR_VECINOS])
+        return len(n.atrib[nodo.ATTR_VECINOS])
 
     def __str__(self):
         """
@@ -166,10 +169,10 @@ class Grafo:
         I = numpy.array([math.inf, math.inf])
         F = numpy.array([-math.inf, -math.inf])
         for v in self.nodos.values():
-            I[0] = min(I[0], v.atrib[Nodo.ATTR_POS][0])
-            I[1] = min(I[1], v.atrib[Nodo.ATTR_POS][1])
-            F[0] = max(F[0], v.atrib[Nodo.ATTR_POS][0])
-            F[1] = max(F[1], v.atrib[Nodo.ATTR_POS][1])
+            I[0] = min(I[0], v.atrib[nodo.ATTR_POS][0])
+            I[1] = min(I[1], v.atrib[nodo.ATTR_POS][1])
+            F[0] = max(F[0], v.atrib[nodo.ATTR_POS][0])
+            F[1] = max(F[1], v.atrib[nodo.ATTR_POS][1])
 
         if F[0] <= I[0] or F[1] <= I[0]:
             self.extent = numpy.array([numpy.array([-1.0, -1.0]), numpy.array([1.0, 1.0])])
@@ -238,16 +241,16 @@ class Grafo:
 
         # viewport.frame.surf(self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_FONDO])
 
-        if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_EXTENSION]:
+        if self.atrib[ATTR_ESTILO][ESTILO_MOSTRAR_EXTENSION]:
             I = self.transformacion.transformar(self.extent[0])
             F = self.transformacion.transformar(self.extent[1])
             dibujar_rect_punteado(viewport.surf, (128, 128, 128), I, F)
 
-        if self.atrib[Grafo.ATTR_ESTILO][Grafo.ESTILO_MOSTRAR_VIEWPORT]:
+        if self.atrib[ATTR_ESTILO][ESTILO_MOSTRAR_VIEWPORT]:
             dibujar_rect_punteado(viewport.surf, (255, 128, 128), viewport.rect[0], viewport.rect[1])
 
         for v in self.nodos.values():
-            v.atrib[Nodo.ATTR_POS_VP] = self.transformacion.transformar(v.atrib[Nodo.ATTR_POS])
+            v.atrib[nodo.ATTR_POS_VP] = self.transformacion.transformar(v.atrib[nodo.ATTR_POS])
 
         for a in self.aristas.values():
             a.dibujar(viewport)

@@ -1,13 +1,11 @@
 import random
 import time
-
+import threading
 import pygame
 
 import algoritmos
 import arista
 import layout
-import util
-from arista import Arista
 from grafo import Grafo
 
 # Press the green button in the gutter to run the script.
@@ -34,8 +32,8 @@ class MyView(Viewport):
             self.layinout = False
         elif pressed[pygame.K_a]:
             for a in self.grafo.aristas.values():
-                a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS] = \
-                    not a.atrib[arista.Arista.ATTR_ESTILO][arista.Arista.ESTILO_ANTIALIAS]
+                a.atrib[arista.ATTR_ESTILO][arista.ESTILO_ANTIALIAS] = \
+                    not a.atrib[arista.ATTR_ESTILO][arista.ESTILO_ANTIALIAS]
         elif pressed[pygame.K_r]:
             if not self.layinout:
                 layout.Random(self.grafo).ejecutar()
@@ -54,8 +52,8 @@ if __name__ == '__main__':
     # g1 = Grafo.abrir('grafos/geo.200.15.gv')
     # g1 = Grafo.abrir('grafos/barabasi.200.8.gv')
 
-    # g1 = algoritmos.grafoMalla( 5,  5, diagonales=False)
-    g1 = algoritmos.grafoDorogovtsevMendesV2(150)
+    g1 = algoritmos.grafoMalla( 10,  10, diagonales=False)
+    # g1 = algoritmos.grafoDorogovtsevMendesV2(150)
 
     g2 = g1.clonar()
     bfs = Grafo()
@@ -68,8 +66,14 @@ if __name__ == '__main__':
     # ColorScheme().apply_to_graph(bfs)
     # ColorScheme().apply_to_graph(dfs)
 
-    algoritmos.BFS(bfs, g1)
-    algoritmos.DFS(dfs, g2)
+    # algoritmos.BFS(bfs, g1)
+    # algoritmos.DFS(dfs, g2)
+
+    bfsThread = threading.Thread(target=algoritmos.BFS, args=(bfs, g1, 500))
+    dfsThread = threading.Thread(target=algoritmos.DFS, args=(dfs, g2, 500))
+
+    bfsThread.start()
+    dfsThread.start()
 
     vp1 = MyView(g1)
     vp1.set_rect([0, 0], [600, 500])
@@ -96,3 +100,5 @@ if __name__ == '__main__':
     win.add_key_listerer(vp4)
 
     win.show([1200, 1000])
+
+    print('Wait until all threads have finished.')

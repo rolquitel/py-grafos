@@ -108,6 +108,8 @@ class Frame:
 
             pygame.display.flip()
 
+        pygame.quit()
+
 
 class Viewport:
     """
@@ -183,17 +185,18 @@ class Viewport:
         :return: None
         """
         if self.layinout:
-            self.layinout = not self.layout.paso()
+        #     self.layinout = not self.layout.paso()
+            self.layout.paso()
 
         tam_out_rect = self.out_rect[1] - self.out_rect[0]
         tam_mid_rect = self.mid_rect[1] - self.mid_rect[0]
 
         pygame.draw.rect(self.frame.surf,
-                         self.grafo.atrib[grafo.Grafo.ATTR_ESTILO][grafo.Grafo.ESTILO_FONDO],
+                         self.grafo.atrib[grafo.ATTR_ESTILO][grafo.ESTILO_FONDO],
                          (self.out_rect[0], tam_out_rect),
                          width=0)
         pygame.draw.rect(self.frame.surf,
-                         self.grafo.atrib[grafo.Grafo.ATTR_ESTILO][grafo.Grafo.ESTILO_COL_LINEA],
+                         self.grafo.atrib[grafo.ATTR_ESTILO][grafo.ESTILO_COL_LINEA],
                          (self.mid_rect[0], tam_mid_rect),
                          width=1)
 
@@ -202,7 +205,7 @@ class Viewport:
 
             cad = str(len(self.grafo.nodos.values())) + ' nodos y ' + str(len(self.grafo.aristas.values())) + ' aristas'
             self.frame.text(self.mid_rect[0] + 10,
-                            self.grafo.atrib[grafo.Grafo.ATTR_ESTILO][grafo.Grafo.ESTILO_COL_LINEA],
+                            self.grafo.atrib[grafo.ATTR_ESTILO][grafo.ESTILO_COL_LINEA],
                             cad)
 
     def key_manage(self, pressed):
@@ -240,9 +243,9 @@ class ColorScheme:
         for a in graph.aristas.values():
             a.estilo(Arista.ESTILO_COLOR, self.edge_color)
 
-        graph.estilo(grafo.Grafo.ESTILO_FONDO, self.bg_color)
-        graph.estilo(grafo.Grafo.ESTILO_APLICADO, self)
-        graph.estilo(grafo.Grafo.ESTILO_COL_LINEA, self.fg_color)
+        graph.estilo(grafo.ESTILO_FONDO, self.bg_color)
+        graph.estilo(grafo.ESTILO_APLICADO, self)
+        graph.estilo(grafo.ESTILO_COL_LINEA, self.fg_color)
 
 
 class DarkGrayColorScheme(ColorScheme):
