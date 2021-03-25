@@ -304,7 +304,7 @@ def BFS(bfs, g, sleep=0, s=None):
                     m.style(STYLE_FILLCOLOR, colorRamp(i))
 
                     e.style(STYLE_THICKNESS, 2)
-                    e.style(STYLE_COLOR, WHITE)
+                    e.style(STYLE_COLOR, COLOR_DARK_GREEN)
 
                     e.atrib['bfs'] = True
                     nextLayer[m.id] = m
@@ -329,10 +329,6 @@ def DFS(dfs, g, sleep=0, s=None):
 
     DFS_R(seed, dfs, added, sleep, 0)
     print('DFS finished.')
-
-
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
 
 
 def DFS_R(seed, dfs, added, sleep, layer):
@@ -360,12 +356,12 @@ def DFS_R(seed, dfs, added, sleep, layer):
             dfs.addEdge(str(nn.id) + '->' + str(mm.id), nn.id, mm.id)
 
             e.style(STYLE_THICKNESS, 3)
-            e.style(STYLE_COLOR, RED)
+            e.style(STYLE_COLOR, COLOR_DARK_YELLOW)
 
             time.sleep(sleep / 2000.0)
 
             DFS_R(m, dfs, added, sleep, layer + 1)
 
             e.style(STYLE_THICKNESS, 2)
-            e.style(STYLE_COLOR, WHITE)
+            e.style(STYLE_COLOR, COLOR_DARK_GREEN)
             time.sleep(sleep / 2000.0)

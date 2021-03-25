@@ -30,7 +30,7 @@ class MyView(Viewport):
         elif pressed[pygame.K_ESCAPE]:
             self.layinout = False
         elif pressed[pygame.K_a]:
-            for a in self.grafo.aristas.values():
+            for a in self.grafo.edges.values():
                 a.atrib[ui.ATTR_STYLE][ui.STYLE_ANTIALIAS] = \
                     not a.atrib[ui.ATTR_STYLE][ui.STYLE_ANTIALIAS]
         elif pressed[pygame.K_r]:
