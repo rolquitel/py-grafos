@@ -4,16 +4,16 @@ import random
 import numpy
 import pygame
 
-import layout
-import grafo
-from arista import Arista
-from nodo import Nodo
+from names import *
+
+# from layout import stop_layinout
 
 
 class Frame:
     """
     Clase para controlar la ventana de pygame
     """
+
     def __init__(self):
         self.views = []             # lista de viewports a mostrar
         self.surf = None            # surface de dibujo de pygame
@@ -66,7 +66,6 @@ class Frame:
         ev = pygame.event.get()
         for event in ev:
             if event.type == pygame.QUIT:
-                layout.parar_layout = True
                 self.running = False
 
             if event.type == pygame.KEYDOWN:
@@ -185,27 +184,28 @@ class Viewport:
         :return: None
         """
         if self.layinout:
-        #     self.layinout = not self.layout.paso()
-            self.layout.paso()
+            #     self.layinout = not self.layout.paso()
+            self.layout.step()
 
         tam_out_rect = self.out_rect[1] - self.out_rect[0]
         tam_mid_rect = self.mid_rect[1] - self.mid_rect[0]
 
         pygame.draw.rect(self.frame.surf,
-                         self.grafo.atrib[grafo.ATTR_ESTILO][grafo.ESTILO_FONDO],
+                         self.grafo.attr[ATTR_STYLE][STYLE_BACKGROUND],
                          (self.out_rect[0], tam_out_rect),
                          width=0)
         pygame.draw.rect(self.frame.surf,
-                         self.grafo.atrib[grafo.ATTR_ESTILO][grafo.ESTILO_COL_LINEA],
+                         self.grafo.attr[ATTR_STYLE][STYLE_LINECOLOR],
                          (self.mid_rect[0], tam_mid_rect),
                          width=1)
 
         if self.grafo is not None:
-            self.grafo.dibujar(self)
+            self.grafo.draw(self)
 
-            cad = str(len(self.grafo.nodos.values())) + ' nodos y ' + str(len(self.grafo.aristas.values())) + ' aristas'
+            cad = str(len(self.grafo.nodes.values())) + ' nodos y ' + \
+                str(len(self.grafo.edges.values())) + ' aristas'
             self.frame.text(self.mid_rect[0] + 10,
-                            self.grafo.atrib[grafo.ATTR_ESTILO][grafo.ESTILO_COL_LINEA],
+                            self.grafo.attr[ATTR_STYLE][STYLE_LINECOLOR],
                             cad)
 
     def key_manage(self, pressed):
@@ -229,7 +229,8 @@ class ColorScheme:
 
     def __init__(self):
         for i in range(256):
-            self.node_fill_colors.append((random.randint(32, 224), random.randint(32, 224), random.randint(32, 224)))
+            self.node_fill_colors.append(
+                (random.randint(32, 224), random.randint(32, 224), random.randint(32, 224)))
 
     def apply_to_graph(self, graph):
         """
@@ -238,20 +239,22 @@ class ColorScheme:
         :return: None
         """
         for n in graph.nodos.values():
-            n.estilo(Nodo.ESTILO_COL_RELLENO, self.node_fill_colors[random.randint(0, len(self.node_fill_colors) - 1)])
+            n.estilo(STYLE_FILLCOLOR, self.node_fill_colors[random.randint(
+                0, len(self.node_fill_colors) - 1)])
 
         for a in graph.aristas.values():
-            a.estilo(Arista.ESTILO_COLOR, self.edge_color)
+            a.estilo(STYLE_COLOR, self.edge_color)
 
-        graph.estilo(grafo.ESTILO_FONDO, self.bg_color)
-        graph.estilo(grafo.ESTILO_APLICADO, self)
-        graph.estilo(grafo.ESTILO_COL_LINEA, self.fg_color)
+        graph.estilo(STYLE_BACKGROUND, self.bg_color)
+        graph.estilo(STYLE_APPLIED, self)
+        graph.estilo(STYLE_LINECOLOR, self.fg_color)
 
 
 class DarkGrayColorScheme(ColorScheme):
     """
     Clase de esquema de color gris con fondo obscuro
     """
+
     def __init__(self):
         self.bg_color = (16, 16, 16)
         self.fg_color = (64, 64, 64)
@@ -267,6 +270,7 @@ class LightGrayColorScheme(ColorScheme):
     """
     Clase de esquema de color gris con fondo claro
     """
+
     def __init__(self):
         self.bg_color = (224, 224, 224)
         self.fg_color = (64, 64, 64)
@@ -282,6 +286,7 @@ class BlueRedColorScheme(ColorScheme):
     """
     Clase con esquema de color de fondo azul obscuro y nodos en tonos de rosa
     """
+
     def __init__(self):
         self.bg_color = (16, 16, 64)
         self.fg_color = (64, 32, 32)

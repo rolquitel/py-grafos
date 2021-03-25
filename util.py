@@ -3,7 +3,7 @@ import pygame
 import pygame.freetype
 
 
-def dibujar_linea_punteada(surf, color, start_pos, end_pos, width=1, dash_length=10):
+def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
     origin = numpy.array(start_pos)
     target = numpy.array(end_pos)
     displacement = target - origin
@@ -16,14 +16,14 @@ def dibujar_linea_punteada(surf, color, start_pos, end_pos, width=1, dash_length
         pygame.draw.aaline(surf, color, start, end, width)
 
 
-def dibujar_rect_punteado(surf, color, start_pos, end_pos, width=1, dash_length=10):
-    dibujar_linea_punteada(surf, color, start_pos, [start_pos[0], end_pos[1]], width, dash_length)
-    dibujar_linea_punteada(surf, color, start_pos, [end_pos[0], start_pos[1]], width, dash_length)
-    dibujar_linea_punteada(surf, color, end_pos, [start_pos[0], end_pos[1]], width, dash_length)
-    dibujar_linea_punteada(surf, color, end_pos, [end_pos[0], start_pos[1]], width, dash_length)
+def draw_dashed_rect(surf, color, start_pos, end_pos, width=1, dash_length=10):
+    draw_dashed_line(surf, color, start_pos, [start_pos[0], end_pos[1]], width, dash_length)
+    draw_dashed_line(surf, color, start_pos, [end_pos[0], start_pos[1]], width, dash_length)
+    draw_dashed_line(surf, color, end_pos, [start_pos[0], end_pos[1]], width, dash_length)
+    draw_dashed_line(surf, color, end_pos, [end_pos[0], start_pos[1]], width, dash_length)
 
 
-class Transformacion:
+class Transform:
     """
     Clase para transformar dado un espacio real, denotado por una extensión, y un viewport
     """
@@ -55,7 +55,7 @@ class Transformacion:
             desp = (Sy - Sx) / (2 * Sy)
             self.offset = numpy.array([0, self.T[1] * desp])
 
-    def transformar(self, punto):
+    def transform(self, punto):
         # punto = numpy.array(punto)
         return self.escala * (punto - self.extent[0]) + self.viewport[0] + self.offset
 
@@ -64,5 +64,5 @@ class Extent:
     def __init__(self, rect):
         self.rect = rect
 
-    def tam(self):
+    def size(self):
         return self.rect[1] - self.rect[0]

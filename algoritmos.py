@@ -1,14 +1,10 @@
-from arista import Arista
 import math
 import random
 import time
 import numpy
 
-import arista
-import nodo
-import grafo
-
-from grafo import Grafo
+from graph import Graph
+from names import *
 
 
 def dist(a, b):
@@ -19,7 +15,7 @@ def dist(a, b):
     :return:
     """
     return math.sqrt(
-        (a.atrib[grafo.X_ATTR] - b.atrib[grafo.X_ATTR]) ** 2 + (a.atrib[grafo.Y_ATTR] - b.atrib[grafo.Y_ATTR]) ** 2)
+        (a.attr[X_ATTR] - b.attr[X_ATTR]) ** 2 + (a.attr[Y_ATTR] - b.attr[Y_ATTR]) ** 2)
 
 
 def randomArray(size):
@@ -52,17 +48,17 @@ def randomErdos(n, m):
     :param m: número de aristas
     :return: grafo generado
     """
-    g = Grafo()
+    g = Graph()
 
     for i in range(n):
-        g.agregarNodo(grafo.NNAME_PREFIX + str(i))
+        g.addNode(NNAME_PREFIX + str(i))
 
     for i in range(m):
         u = random.randint(0, n - 1)
         v = random.randint(0, n - 1)
         if u != v:
-            g.agregarArista(grafo.NNAME_PREFIX + str(u) + '->' + grafo.NNAME_PREFIX + str(v), grafo.NNAME_PREFIX + str(u),
-                            grafo.NNAME_PREFIX + str(v))
+            g.addEdge(NNAME_PREFIX + str(u) + '->' + NNAME_PREFIX + str(v), NNAME_PREFIX + str(u),
+                      NNAME_PREFIX + str(v))
 
     return g
 
@@ -74,18 +70,18 @@ def randomGilbert(n, p):
     :param p: probabilidad de generar una arista entre un par de nodos
     :return: grafo generado
     """
-    g = Grafo()
+    g = Graph()
 
     for i in range(n):
-        g.agregarNodo(grafo.NNAME_PREFIX + str(i))
+        g.addNode(NNAME_PREFIX + str(i))
 
     for i in range(n):
         for j in range(n):
             if random.random() < p:
                 if (j != i):
-                    g.agregarArista(grafo.NNAME_PREFIX + str(i) + '->' + grafo.NNAME_PREFIX + str(j),
-                                    grafo.NNAME_PREFIX + str(i),
-                                    grafo.NNAME_PREFIX + str(j))
+                    g.addEdge(NNAME_PREFIX + str(i) + '->' + NNAME_PREFIX + str(j),
+                              NNAME_PREFIX + str(i),
+                              NNAME_PREFIX + str(j))
     return g
 
 
@@ -96,23 +92,24 @@ def randomGeo(n, r):
     :param r: distancia máxima para generar la arista entre un par de nodos
     :return: grafo generado
     """
-    g = Grafo()
+    g = Graph()
 
     # Generar n nodos con coordenadas en el espacio ((0,0),(1,1))
     for i in range(n):
-        node = g.agregarNodo(grafo.NNAME_PREFIX + str(i))
-        node.atrib[grafo.X_ATTR] = random.random()
-        node.atrib[grafo.Y_ATTR] = random.random()
+        node = g.addNode(NNAME_PREFIX + str(i))
+        node.attr[X_ATTR] = random.random()
+        node.attr[Y_ATTR] = random.random()
 
     # Crear una arista entre cada par de nodos que están a distancia <= r
     for i in range(n):
         for j in range(n):
             if i != j:
-                d = dist(g.obtNodo(grafo.NNAME_PREFIX + str(i)), g.obtNodo(grafo.NNAME_PREFIX + str(j)))
+                d = dist(g.getNode(NNAME_PREFIX + str(i)),
+                         g.getNode(NNAME_PREFIX + str(j)))
                 if d <= r:
-                    g.agregarArista(grafo.NNAME_PREFIX + str(i) + '->' + grafo.NNAME_PREFIX + str(j),
-                                    grafo.NNAME_PREFIX + str(i),
-                                    grafo.NNAME_PREFIX + str(j))
+                    g.addEdge(NNAME_PREFIX + str(i) + '->' + NNAME_PREFIX + str(j),
+                              NNAME_PREFIX + str(i),
+                              NNAME_PREFIX + str(j))
 
     return g
 
@@ -124,31 +121,31 @@ def randomBarabasi(n, d):
     :param d: número máximo de aristas por nodo
     :return: grafo generado
     """
-    g = Grafo()
-    g.agregarNodo(grafo.NNAME_PREFIX + str(0))
+    g = Graph()
+    g.addNode(NNAME_PREFIX + str(0))
 
     for u in range(1, n):
         randomNodes = randomArray(u)
         for v in range(u):
-            deg = g.obtGrado(grafo.NNAME_PREFIX + str(randomNodes[v]))
+            deg = g.getDegree(NNAME_PREFIX + str(randomNodes[v]))
             p = 1 - deg / d
             if random.random() < p:
                 if randomNodes[v] != u:
-                    g.agregarArista(grafo.NNAME_PREFIX + str(u) + '->' + grafo.NNAME_PREFIX + str(randomNodes[v]),
-                                    grafo.NNAME_PREFIX + str(u), grafo.NNAME_PREFIX + str(randomNodes[v]))
+                    g.addEdge(NNAME_PREFIX + str(u) + '->' + NNAME_PREFIX + str(randomNodes[v]),
+                              NNAME_PREFIX + str(u), NNAME_PREFIX + str(randomNodes[v]))
 
     return g
 
 
-def nombreNodo(i):
-    return grafo.NNAME_PREFIX + str(i)
+def nodeName(i):
+    return NNAME_PREFIX + str(i)
 
 
-def nombreArista(i, j):
-    return nombreNodo(i) + '->' + nombreNodo(j)
+def edgeName(i, j):
+    return nodeName(i) + '->' + nodeName(j)
 
 
-def grafoMalla(m, n=0, diagonales=False):
+def gridGraph(m, n=0, diagonals=False):
     """
     Genera un grafo de malla
     :param m: número de filas
@@ -164,66 +161,67 @@ def grafoMalla(m, n=0, diagonales=False):
     m = max(2, m)
     n = max(2, n)
 
-    g = Grafo()
+    g = Graph()
 
     for i in range(m):
         for j in range(n):
-            g.agregarNodo(nombreNodo(i * n + j)).atrib[nodo.ATTR_POS] = numpy.array([float(i), float(j)])
+            g.addNode(nodeName(i * n + j)
+                      ).attr[ATTR_POS] = numpy.array([float(i), float(j)])
             if j < n - 1:
-                g.agregarArista(nombreArista(i * n + j, i * n + j + 1),
-                                nombreNodo(i * n + j),
-                                nombreNodo(i * n + j + 1))
+                g.addEdge(edgeName(i * n + j, i * n + j + 1),
+                          nodeName(i * n + j),
+                          nodeName(i * n + j + 1))
             if i < m - 1:
-                g.agregarArista(nombreArista(i * n + j, (i + 1) * n + j),
-                                nombreNodo(i * n + j),
-                                nombreNodo((i + 1) * n + j))
-            if i < m - 1 and j < n - 1 and diagonales:
-                g.agregarArista(nombreArista(i * n + j, (i + 1) * n + j + 1),
-                                nombreNodo(i * n + j),
-                                nombreNodo((i + 1) * n + j + 1))
-            if i > 0 and j < n - 1 and diagonales:
-                g.agregarArista(nombreArista(i * n + j, (i - 1) * n + j + 1),
-                                nombreNodo(i * n + j),
-                                nombreNodo((i - 1) * n + j + 1))
+                g.addEdge(edgeName(i * n + j, (i + 1) * n + j),
+                          nodeName(i * n + j),
+                          nodeName((i + 1) * n + j))
+            if i < m - 1 and j < n - 1 and diagonals:
+                g.addEdge(edgeName(i * n + j, (i + 1) * n + j + 1),
+                          nodeName(i * n + j),
+                          nodeName((i + 1) * n + j + 1))
+            if i > 0 and j < n - 1 and diagonals:
+                g.addEdge(edgeName(i * n + j, (i - 1) * n + j + 1),
+                          nodeName(i * n + j),
+                          nodeName((i - 1) * n + j + 1))
 
-    g.atrib[grafo.ATTR_ACOMODADO] = True
+    g.attr[ATTR_LAYERED] = True
     return g
 
 
-def eventoDorogovtsevMendes(g):
-    i = len(g.nodos)
+def event_DorogovtsevMendes(g):
+    i = len(g.nodes)
     a = g.getRandomEdge()
-    g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id)
-    g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id)
+    g.addEdge(edgeName(i, a.n0.id), i, a.n0.id)
+    g.addEdge(edgeName(i, a.n1.id), i, a.n1.id)
 
 
-def grafoDorogovtsevMendes(n):
-    g = Grafo()
+def DorogovtsevMendesGraph(n):
+    g = Graph()
 
-    g.agregarArista(nombreArista(0, 1), 0, 1)
-    g.agregarArista(nombreArista(1, 2), 1, 2)
-    g.agregarArista(nombreArista(2, 0), 2, 0)
+    g.addEdge(edgeName(0, 1), 0, 1)
+    g.addEdge(edgeName(1, 2), 1, 2)
+    g.addEdge(edgeName(2, 0), 2, 0)
 
     if n < 3:
         n = 3
 
     for i in range(3, n):
         # a = g.getRandomEdge()
-        # g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id)
-        # g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id)
-        eventoDorogovtsevMendes(g)
+        # g.addEdge(nombreArista(i, a.n0.id), i, a.n0.id)
+        # g.addEdge(nombreArista(i, a.n1.id), i, a.n1.id)
+        event_DorogovtsevMendes(g)
 
     return g
 
 
-def grafoDorogovtsevMendesV2(n, divisor=10, p_inicial=1.0):
-    g = Grafo()
+def DorogovtsevMendesGraphV2(n, divisor=10, p_inicial=1.0):
+    g = Graph()
 
     divisor = max(1.0, divisor)
 
-    g.agregarArista(nombreArista(0, 1), 0, 1).atrib['__DM'] = p_inicial
-    g.agregarArista(nombreArista(1, 2), 1, 2).atrib['__DM'] = p_inicial
-    g.agregarArista(nombreArista(2, 0), 2, 0).atrib['__DM'] = p_inicial
+    g.addEdge(edgeName(0, 1), 0, 1).atrib['__DM'] = p_inicial
+    g.addEdge(edgeName(1, 2), 1, 2).atrib['__DM'] = p_inicial
+    g.addEdge(edgeName(2, 0), 2, 0).atrib['__DM'] = p_inicial
 
     if n < 3:
         n = 3
@@ -233,14 +231,14 @@ def grafoDorogovtsevMendesV2(n, divisor=10, p_inicial=1.0):
         while not random.random() <= a.atrib['__DM']:
             a = g.getRandomEdge()
 
-        g.agregarArista(nombreArista(i, a.n0.id), i, a.n0.id).atrib['__DM'] = p_inicial
-        g.agregarArista(nombreArista(i, a.n1.id), i, a.n1.id).atrib['__DM'] = p_inicial
+        g.addEdge(edgeName(i, a.n0.id), i, a.n0.id).atrib['__DM'] = p_inicial
+        g.addEdge(edgeName(i, a.n1.id), i, a.n1.id).atrib['__DM'] = p_inicial
         a.atrib['__DM'] = a.atrib['__DM'] / divisor
 
     return g
 
 
-def rampColor(layer):
+def colorRamp(layer):
     ramp = [
         (0xFA, 0, 0),
         (0xFA, 0x2A, 0),
@@ -265,18 +263,18 @@ def BFS(bfs, g, sleep=0, s=None):
 
     print('BFS started ...')
     if s is None:
-        seed = random.choice(list(g.nodos.values()))
+        seed = random.choice(list(g.nodes.values()))
     else:
-        seed = g.obtNodo(s)
-    seed.estilo(nodo.ESTILO_COL_RELLENO, (250, 0, 0))
+        seed = g.getNode(s)
+    seed.style(STYLE_FILLCOLOR, (250, 0, 0))
 
-    n = bfs.agregarNodo(seed.id)
-    n.estilo(nodo.ESTILO_COL_RELLENO, rampColor(0))
-    n.estilo(nodo.ESTILO_TAMANO, 20)
+    n = bfs.addNode(seed.id)
+    n.style(STYLE_FILLCOLOR, colorRamp(0))
+    n.style(STYLE_SIZE, 20)
 
     layers.append({seed.id: seed})
     added[seed.id] = seed
-    for e in g.aristas.values():
+    for e in g.edges.values():
         e.atrib['bfs'] = False
 
     i = 0
@@ -286,7 +284,7 @@ def BFS(bfs, g, sleep=0, s=None):
 
         for n in curLayer.values():
             # fillColor = rampColor(i + 1)
-            edges = n.atrib[nodo.ATTR_ARISTAS]
+            edges = n.attr[ATTR_EDGES]
             for e in edges:
                 if e.n0.id == n.id:
                     m = e.n1
@@ -294,19 +292,19 @@ def BFS(bfs, g, sleep=0, s=None):
                     m = e.n0
 
                 if m.id not in nextLayer and m.id not in added:
-                    nn = bfs.agregarNodo(n.id)
-                    mm = bfs.agregarNodo(m.id)
+                    nn = bfs.addNode(n.id)
+                    mm = bfs.addNode(m.id)
 
                     if i == 0:
-                        nn.estilo(nodo.ESTILO_TAMANO, 20)
-                        nn.estilo(nodo.ESTILO_COL_RELLENO, rampColor(0))
+                        nn.style(STYLE_SIZE, 20)
+                        nn.style(STYLE_FILLCOLOR, colorRamp(0))
 
-                    bfs.agregarArista(str(n.id) + '->' + str(m.id), nn.id, mm.id)
-                    mm.estilo(nodo.ESTILO_COL_RELLENO, rampColor(i))
-                    m.estilo(nodo.ESTILO_COL_RELLENO, rampColor(i))
+                    bfs.addEdge(str(n.id) + '->' + str(m.id), nn.id, mm.id)
+                    mm.style(STYLE_FILLCOLOR, colorRamp(i))
+                    m.style(STYLE_FILLCOLOR, colorRamp(i))
 
-                    e.estilo(arista.ESTILO_GROSOR, 2)
-                    e.estilo(arista.ESTILO_COLOR, WHITE) 
+                    e.style(STYLE_THICKNESS, 2)
+                    e.style(STYLE_COLOR, WHITE)
 
                     e.atrib['bfs'] = True
                     nextLayer[m.id] = m
@@ -319,25 +317,28 @@ def BFS(bfs, g, sleep=0, s=None):
 
     print('BFS finished.')
 
+
 def DFS(dfs, g, sleep=0, s=None):
     added = {}
 
     print('DFS started ...')
     if s is None:
-        seed = random.choice(list(g.nodos.values()))
+        seed = random.choice(list(g.nodes.values()))
     else:
         seed = g.obtNodo(s)
 
     DFS_R(seed, dfs, added, sleep, 0)
     print('DFS finished.')
 
+
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+
 
 def DFS_R(seed, dfs, added, sleep, layer):
     added[seed.id] = seed
 
-    edges = seed.atrib[nodo.ATTR_ARISTAS]
+    edges = seed.attr[ATTR_EDGES]
     for e in edges:
         if e.n0.id == seed.id:
             m = e.n1
@@ -345,26 +346,26 @@ def DFS_R(seed, dfs, added, sleep, layer):
             m = e.n0
 
         if not m.id in added:
-            nn = dfs.agregarNodo(seed.id)
-            mm = dfs.agregarNodo(m.id)
+            nn = dfs.addNode(seed.id)
+            mm = dfs.addNode(m.id)
 
             if layer == 0:
-                nn.estilo(nodo.ESTILO_TAMANO, 20)
-                nn.estilo(nodo.ESTILO_COL_RELLENO, rampColor(layer) )
-                nn.estilo(nodo.ESTILO_COL_BORDE, rampColor(layer) )
+                nn.style(STYLE_SIZE, 20)
+                nn.style(STYLE_FILLCOLOR, colorRamp(layer))
+                nn.style(STYLE_BORDERCOLOR, colorRamp(layer))
 
-            mm.estilo(nodo.ESTILO_COL_RELLENO, rampColor(layer + 1) )
-            m.estilo(nodo.ESTILO_COL_RELLENO, rampColor(layer + 1) )
+            mm.style(STYLE_FILLCOLOR, colorRamp(layer + 1))
+            m.style(STYLE_FILLCOLOR, colorRamp(layer + 1))
 
-            dfs.agregarArista(str(nn.id) + '->' + str(mm.id), nn.id, mm.id)   
+            dfs.addEdge(str(nn.id) + '->' + str(mm.id), nn.id, mm.id)
 
-            e.estilo(arista.ESTILO_GROSOR, 3)
-            e.estilo(arista.ESTILO_COLOR, RED)
+            e.style(STYLE_THICKNESS, 3)
+            e.style(STYLE_COLOR, RED)
 
             time.sleep(sleep / 2000.0)
 
-            DFS_R(m, dfs, added, sleep, layer + 1)  
+            DFS_R(m, dfs, added, sleep, layer + 1)
 
-            e.estilo(arista.ESTILO_GROSOR, 2)
-            e.estilo(arista.ESTILO_COLOR, WHITE)       
+            e.style(STYLE_THICKNESS, 2)
+            e.style(STYLE_COLOR, WHITE)
             time.sleep(sleep / 2000.0)

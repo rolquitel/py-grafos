@@ -1,15 +1,14 @@
 import random
-import time
+import sys
 import threading
 import pygame
 
 import algoritmos
-import arista
+import ui
 import layout
-from grafo import Grafo
+from graph import Graph
 
-# Press the green button in the gutter to run the script.
-from nodo import Nodo
+from node import Node
 from ui import Viewport, Frame, ColorScheme, DarkGrayColorScheme, LightGrayColorScheme, BlueRedColorScheme
 
 
@@ -19,7 +18,7 @@ class MyView(Viewport):
             if not self.layinout:
                 self.layinout = True
                 self.layout = layout.BarnesHut(self.grafo)
-                self.layout.umbral_convergencia = 1.0
+                self.layout.conv_threshold = 1.0
         elif pressed[pygame.K_s]:
             if not self.layinout:
                 self.layinout = True
@@ -32,16 +31,16 @@ class MyView(Viewport):
             self.layinout = False
         elif pressed[pygame.K_a]:
             for a in self.grafo.aristas.values():
-                a.atrib[arista.ATTR_ESTILO][arista.ESTILO_ANTIALIAS] = \
-                    not a.atrib[arista.ATTR_ESTILO][arista.ESTILO_ANTIALIAS]
+                a.atrib[ui.ATTR_STYLE][ui.STYLE_ANTIALIAS] = \
+                    not a.atrib[ui.ATTR_STYLE][ui.STYLE_ANTIALIAS]
         elif pressed[pygame.K_r]:
             if not self.layinout:
-                layout.Random(self.grafo).ejecutar()
+                layout.Random(self.grafo).run()
         elif pressed[pygame.K_g]:
             if not self.layinout:
-                layout.Grid(self.grafo).ejecutar()
+                layout.Grid(self.grafo).run()
         elif pressed[pygame.K_d]:
-            algoritmos.eventoDorogovtsevMendes(self.grafo)
+            algoritmos.event_DorogovtsevMendes(self.grafo)
 
 
 if __name__ == '__main__':
@@ -52,12 +51,12 @@ if __name__ == '__main__':
     # g1 = Grafo.abrir('grafos/geo.200.15.gv')
     # g1 = Grafo.abrir('grafos/barabasi.200.8.gv')
 
-    g1 = algoritmos.grafoMalla( 10,  10, diagonales=False)
+    g1 = algoritmos.gridGraph(10,  10, diagonals=False)
     # g1 = algoritmos.grafoDorogovtsevMendesV2(150)
 
-    g2 = g1.clonar()
-    bfs = Grafo()
-    dfs = Grafo()
+    g2 = g1.clone()
+    bfs = Graph()
+    dfs = Graph()
 
     # layout.Random(g2).ejecutar()
 
@@ -69,8 +68,8 @@ if __name__ == '__main__':
     # algoritmos.BFS(bfs, g1)
     # algoritmos.DFS(dfs, g2)
 
-    bfsThread = threading.Thread(target=algoritmos.BFS, args=(bfs, g1, 500))
-    dfsThread = threading.Thread(target=algoritmos.DFS, args=(dfs, g2, 500))
+    bfsThread = threading.Thread(target=algoritmos.BFS, args=(bfs, g1, 50))
+    dfsThread = threading.Thread(target=algoritmos.DFS, args=(dfs, g2, 50))
 
     bfsThread.start()
     dfsThread.start()
