@@ -1,4 +1,4 @@
-import random
+import math
 import sys
 import threading
 import pygame
@@ -51,8 +51,8 @@ if __name__ == '__main__':
     # g1 = Grafo.abrir('grafos/geo.200.15.gv')
     # g1 = Grafo.abrir('grafos/barabasi.200.8.gv')
 
-    g1 = algoritmos.gridGraph(10,  10, diagonals=False)
-    # g1 = algoritmos.grafoDorogovtsevMendesV2(150)
+    # g1 = algoritmos.gridGraph(10,  10, diagonals=False)
+    g1 = algoritmos.DorogovtsevMendesGraph(150)
 
     g2 = g1.clone()
     bfs = Graph()
@@ -68,8 +68,8 @@ if __name__ == '__main__':
     # algoritmos.BFS(bfs, g1)
     # algoritmos.DFS(dfs, g2)
 
-    bfsThread = threading.Thread(target=algoritmos.BFS, args=(bfs, g1, 50))
-    dfsThread = threading.Thread(target=algoritmos.DFS, args=(dfs, g2, 50))
+    bfsThread = threading.Thread(target=algoritmos.BFS, args=(bfs, g1, 500))
+    dfsThread = threading.Thread(target=algoritmos.DFS, args=(dfs, g2, 500))
 
     bfsThread.start()
     dfsThread.start()
@@ -77,14 +77,22 @@ if __name__ == '__main__':
     vp1 = MyView(g1)
     vp1.set_rect([0, 0], [600, 500])
 
-    vp2 = MyView(bfs)
+    vp2 = Viewport(bfs)
     vp2.set_rect([600, 0], [600, 500])
+    vp2.layinout = True
+    vp2.layout = layout.FruchtermanReingold(bfs)
+    vp2.layout.t = 1.0
+    vp2.layout.advance = math.sqrt(len(g1.nodes)) / 2
 
     vp3 = MyView(g2)
     vp3.set_rect([0, 500], [600, 500])
 
-    vp4 = MyView(dfs)
+    vp4 = Viewport(dfs)
     vp4.set_rect([600, 500], [600, 500])
+    vp4.layinout = True
+    vp4.layout = layout.FruchtermanReingold(dfs)
+    vp4.layout.t = 1.0
+    vp4.layout.advance = math.sqrt(len(g2.nodes)) / 2
 
     win = Frame()
 
