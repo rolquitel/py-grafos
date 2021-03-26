@@ -117,18 +117,22 @@ class Viewport:
     out_rect = numpy.array([numpy.array([0, 0]), numpy.array([100, 100])])
     mid_rect = numpy.array([numpy.array([0, 0]), numpy.array([100, 100])])
     rect = numpy.array([numpy.array([0, 0]), numpy.array([100, 100])])
-    grafo = None
+    graph = None
     layinout = False
     frame = None
     layout = None
-    margen = 0
+    margin = 0
 
-    def __init__(self, g):
+    def __init__(self, g, layout=None):
         """
         Constructor
         :param g: grafo relacionado con el viewport
         """
-        self.grafo = g
+        self.graph = g
+        self.graph.compute_ext()
+        if layout is not None:
+            self.layout = layout
+            self.layinout = True
 
     def set_rect(self, pos, tam, margen=0.05):
         """
@@ -143,7 +147,7 @@ class Viewport:
         margen = max(0, margen)
         margen = min(0.4, margen)
 
-        self.margen = margen
+        self.margin = margen
 
         marco_int = tam * margen
         marco_med = tam * (margen / 2)
@@ -184,28 +188,28 @@ class Viewport:
         :return: None
         """
         if self.layinout:
-            #     self.layinout = not self.layout.paso()
-            self.layout.step()
+            self.layinout = not self.layout.step()
+            # self.layout.step()
 
         tam_out_rect = self.out_rect[1] - self.out_rect[0]
         tam_mid_rect = self.mid_rect[1] - self.mid_rect[0]
 
         pygame.draw.rect(self.frame.surf,
-                         self.grafo.attr[ATTR_STYLE][STYLE_BACKGROUND],
+                         self.graph.attr[ATTR_STYLE][STYLE_BACKGROUND],
                          (self.out_rect[0], tam_out_rect),
                          width=0)
         pygame.draw.rect(self.frame.surf,
-                         self.grafo.attr[ATTR_STYLE][STYLE_LINECOLOR],
+                         self.graph.attr[ATTR_STYLE][STYLE_LINECOLOR],
                          (self.mid_rect[0], tam_mid_rect),
                          width=1)
 
-        if self.grafo is not None:
-            self.grafo.draw(self)
+        if self.graph is not None:
+            self.graph.draw(self)
 
-            cad = str(len(self.grafo.nodes.values())) + ' nodos y ' + \
-                str(len(self.grafo.edges.values())) + ' aristas'
+            cad = str(len(self.graph.nodes.values())) + ' nodos y ' + \
+                str(len(self.graph.edges.values())) + ' aristas'
             self.frame.text(self.mid_rect[0] + 10,
-                            self.grafo.attr[ATTR_STYLE][STYLE_LINECOLOR],
+                            self.graph.attr[ATTR_STYLE][STYLE_LINECOLOR],
                             cad)
 
     def key_manage(self, pressed):

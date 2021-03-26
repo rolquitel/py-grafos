@@ -95,13 +95,13 @@ class FruchtermanReingold(Layout):
     con la mejora introducida por R. Fletcher (2000) para el enfriamiento del procesamiento
     """
 
-    def __init__(self, g):
+    def __init__(self, g, k=50, t=0.95, advance=20, conv_threshold=3.0):
         super().__init__(g)
         # math.sqrt((self.res[0] * self.res[1]) / len(self.grafo.nodes))
-        self.k = 50
-        self.t = 0.95
-        self.advance = 25
-        self.conv_threshold = min(3.0, len(g.nodes) / 100)
+        self.k = k
+        self.t = t
+        self.advance = advance
+        self.conv_threshold = min(conv_threshold, len(g.nodes) / 100)
         self.converged = False
         self.energy = math.inf
         self.progress = 0
@@ -125,8 +125,10 @@ class FruchtermanReingold(Layout):
                 for u in self.graph.nodes.values():
                     if v != u:
                         delta = v.attr[node.ATTR_POS] - u.attr[node.ATTR_POS]
-                        v.attr[node.ATTR_DISP] = v.attr[node.ATTR_DISP] + \
-                            (delta / mag(delta)) * fr(self.k, mag(delta))
+                        m_delta = mag(delta)
+                        if m_delta > 0:
+                            v.attr[node.ATTR_DISP] = v.attr[node.ATTR_DISP] + \
+                                (delta / m_delta) * fr(self.k, m_delta)
 
             # fuerza de atracción
             for e in self.graph.edges.values():
@@ -181,17 +183,16 @@ class BarnesHut(Layout):
     con la mejora introducida por R. Fletcher (2000) para el enfriamiento del procesamiento
     """
 
-    def __init__(self, g):
+    def __init__(self, g, k=50, t=0.95, advance=20, conv_threshold=3.0, points_by_region=4):
         super().__init__(g)
         self.qtree = None
-        self.points_by_region = 4
+        self.points_by_region = points_by_region
         self.theta = 1
-        # math.sqrt((self.res[0] * self.res[1]) / len(self.grafo.nodes))
-        self.k = 50
-        self.t = 0.95
-        self.advance = 25
+        self.k = k
+        self.t = t
+        self.advance = advance
         self.reps_for_down = 5
-        self.conv_threshold = min(3.0, len(g.nodes) / 100)
+        self.conv_threshold = min(conv_threshold, len(g.nodes) / 100)
         self.converged = False
         self.energy = math.inf
         self.initial_energy = 0

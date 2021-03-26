@@ -1,6 +1,7 @@
 import math
 import sys
 import threading
+from time import sleep
 import pygame
 
 import algoritmos
@@ -17,30 +18,30 @@ class MyView(Viewport):
         if pressed[pygame.K_b]:
             if not self.layinout:
                 self.layinout = True
-                self.layout = layout.BarnesHut(self.grafo)
+                self.layout = layout.BarnesHut(self.graph)
                 self.layout.conv_threshold = 1.0
         elif pressed[pygame.K_s]:
             if not self.layinout:
                 self.layinout = True
-                self.layout = layout.Spring(self.grafo)
+                self.layout = layout.Spring(self.graph)
         elif pressed[pygame.K_f]:
             if not self.layinout:
                 self.layinout = True
-                self.layout = layout.FruchtermanReingold(self.grafo)
+                self.layout = layout.FruchtermanReingold(self.graph)
         elif pressed[pygame.K_ESCAPE]:
             self.layinout = False
         elif pressed[pygame.K_a]:
-            for a in self.grafo.edges.values():
+            for a in self.graph.edges.values():
                 a.atrib[ui.ATTR_STYLE][ui.STYLE_ANTIALIAS] = \
                     not a.atrib[ui.ATTR_STYLE][ui.STYLE_ANTIALIAS]
         elif pressed[pygame.K_r]:
             if not self.layinout:
-                layout.Random(self.grafo).run()
+                layout.Random(self.graph).run()
         elif pressed[pygame.K_g]:
             if not self.layinout:
-                layout.Grid(self.grafo).run()
+                layout.Grid(self.graph).run()
         elif pressed[pygame.K_d]:
-            algoritmos.event_DorogovtsevMendes(self.grafo)
+            algoritmos.event_DorogovtsevMendes(self.graph)
 
 
 if __name__ == '__main__':
@@ -68,31 +69,22 @@ if __name__ == '__main__':
     # algoritmos.BFS(bfs, g1)
     # algoritmos.DFS(dfs, g2)
 
-    bfsThread = threading.Thread(target=algoritmos.BFS, args=(bfs, g1, 500))
-    dfsThread = threading.Thread(target=algoritmos.DFS, args=(dfs, g2, 500))
+    tiempo = 50000 / len(g1.nodes)
 
-    bfsThread.start()
-    dfsThread.start()
+    bfsThread = threading.Thread(target=algoritmos.BFS, args=(bfs, g1, tiempo))
+    dfsThread = threading.Thread(target=algoritmos.DFS, args=(dfs, g2, tiempo))
 
-    vp1 = MyView(g1)
+    vp1 = MyView(g1, layout=layout.BarnesHut(g1))
     vp1.set_rect([0, 0], [600, 500])
 
-    vp2 = Viewport(bfs)
+    vp2 = MyView(bfs, layout=layout.FruchtermanReingold(bfs, t=0.9999, advance=math.sqrt(len(g1.nodes)) / 2))
     vp2.set_rect([600, 0], [600, 500])
-    vp2.layinout = True
-    vp2.layout = layout.FruchtermanReingold(bfs)
-    vp2.layout.t = 1.0
-    vp2.layout.advance = math.sqrt(len(g1.nodes)) / 2
 
-    vp3 = MyView(g2)
+    vp3 = MyView(g2, layout=layout.BarnesHut(g2))
     vp3.set_rect([0, 500], [600, 500])
 
-    vp4 = Viewport(dfs)
+    vp4 = MyView(dfs, layout=layout.FruchtermanReingold(dfs, t=0.9999, advance=math.sqrt(len(g1.nodes)) / 2))
     vp4.set_rect([600, 500], [600, 500])
-    vp4.layinout = True
-    vp4.layout = layout.FruchtermanReingold(dfs)
-    vp4.layout.t = 1.0
-    vp4.layout.advance = math.sqrt(len(g2.nodes)) / 2
 
     win = Frame()
 
@@ -105,6 +97,9 @@ if __name__ == '__main__':
     win.add_key_listerer(vp2)
     win.add_key_listerer(vp3)
     win.add_key_listerer(vp4)
+
+    bfsThread.start()
+    dfsThread.start()
 
     win.show([1200, 1000])
 
