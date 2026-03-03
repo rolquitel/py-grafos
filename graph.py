@@ -14,6 +14,8 @@ WRITING_LOCK = threading.Lock()
 class Graph:
     """
     Clase grafo
+
+    realiza las operaciones básicas de un grafo, como agregar nodos y aristas, calcular el rectángulo que delimita la zona del grafo, guardar y cargar el grafo de un archivo, etc.
     """
 
     def __init__(self):
